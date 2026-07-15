@@ -47,22 +47,17 @@ $$;
 -- purga: roda a cada 5 min, apaga contas com pedido > 30 min sem relogin
 create extension if not exists pg_cron;
 
+-- nota: sem DELETE em storage.objects — o Supabase bloqueia via trigger
+-- protect_delete (ver 007). Fotos órfãs ficam inacessíveis pela RLS.
 create function purge_deleted_accounts() returns void
 language plpgsql security definer set search_path = public as $$
-declare
-  doomed uuid[];
 begin
-  select array_agg(id) into doomed
-  from profiles
-  where deletion_requested_at is not null
-    and deletion_requested_at < now() - interval '30 minutes';
-
-  if doomed is null then
-    return;
-  end if;
-
-  delete from storage.objects where owner = any (doomed);
-  delete from auth.users where id = any (doomed);
+  delete from auth.users
+  where id in (
+    select id from profiles
+    where deletion_requested_at is not null
+      and deletion_requested_at < now() - interval '30 minutes'
+  );
 end;
 $$;
 
