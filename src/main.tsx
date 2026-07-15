@@ -6,6 +6,9 @@ import './index.css'
 import App from './App.tsx'
 import { RepositoriesProvider } from './data/RepositoriesContext'
 import { createSupabaseRepositories } from './data/supabase'
+import { lockZoom } from './lib/lockZoom'
+
+lockZoom()
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },

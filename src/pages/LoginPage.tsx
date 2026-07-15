@@ -36,7 +36,7 @@ export function LoginPage() {
           placeholder={t.auth.email}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
         />
         <input
           type="password"
@@ -44,7 +44,7 @@ export function LoginPage() {
           placeholder={t.auth.password}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
         />
         {error && <p className="text-sm text-rose-soft">{error}</p>}
         <button

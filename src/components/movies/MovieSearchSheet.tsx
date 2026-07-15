@@ -46,7 +46,7 @@ export function MovieSearchSheet({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.movies.searchPlaceholder}
-          className="w-full rounded-xl border border-line-strong bg-night px-4 py-3 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+          className="w-full rounded-xl border border-line-strong bg-night px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
         />
         {error && <p className="mt-2 text-sm text-rose-soft">{error}</p>}
         {isLoading && <p className="pt-4 text-center text-sm text-ash">{t.common.loading}</p>}

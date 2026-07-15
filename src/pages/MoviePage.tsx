@@ -202,7 +202,7 @@ export function MoviePage() {
             onChange={(e) => setBody(e.target.value)}
             placeholder="O que vocês acharam?"
             rows={3}
-            className="mt-4 w-full rounded-xl border border-line-strong bg-night px-4 py-3 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+            className="mt-4 w-full rounded-xl border border-line-strong bg-night px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
           />
           <button
             type="submit"

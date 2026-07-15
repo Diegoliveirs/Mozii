@@ -85,7 +85,7 @@ export function PostDetailPage() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Comentar…"
-          className="flex-1 rounded-xl border border-line-strong bg-card px-4 py-2.5 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+          className="flex-1 rounded-xl border border-line-strong bg-card px-4 py-2.5 text-base text-snow placeholder-ash outline-none focus:border-rose"
         />
         <button
           type="submit"

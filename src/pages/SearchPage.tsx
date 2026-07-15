@@ -16,7 +16,7 @@ export function SearchPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.movies.searchPlaceholder}
-          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
         />
       </div>
 

@@ -59,7 +59,7 @@ export function AddToListSheet({ movie, onClose }: { movie: MovieRef; onClose: (
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder={t.movies.listName}
-            className="flex-1 rounded-xl border border-line-strong bg-night px-4 py-2.5 text-sm text-snow placeholder-ash outline-none focus:border-rose"
+            className="flex-1 rounded-xl border border-line-strong bg-night px-4 py-2.5 text-base text-snow placeholder-ash outline-none focus:border-rose"
           />
           <button
             type="submit"
