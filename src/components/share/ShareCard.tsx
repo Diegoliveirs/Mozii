@@ -8,7 +8,10 @@ export const ShareCard = forwardRef<
   HTMLDivElement,
   { post: Post; members: Profile[]; offscreen?: boolean }
 >(function ShareCard({ post, members, offscreen = false }, ref) {
-    const url = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
+    // query própria: nunca acerta a entrada de cache criada pelos <img> sem
+    // crossOrigin do feed (ela vem sem header CORS e mataria a captura)
+    const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
+    const url = baseUrl ? `${baseUrl}?share=1` : null
     const names = members.map((m) => m.displayName).join(' ♥ ')
     const snippet = post.body && post.body.length > 140 ? `${post.body.slice(0, 140)}…` : post.body
 
