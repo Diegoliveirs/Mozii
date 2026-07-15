@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import type { Post } from '../domain/types'
-import { useTmdbMovie } from '../hooks/useTmdbSearch'
+import { useTmdbMovie, useWatchProviders } from '../hooks/useTmdbSearch'
+import { providerLogoUrl } from '../api/tmdb'
 import { useCreateReview, useDeletePost, useMovieReviews, useUpdateReview } from '../hooks/useFeed'
 import { useCouple, useMyProfile } from '../hooks/useCouple'
 import { useListsContaining } from '../hooks/useLists'
@@ -13,6 +14,41 @@ import { PageHeader } from '../components/layout/PageHeader'
 import { backdropUrl } from '../api/tmdb'
 import { timeAgo } from '../lib/dates'
 import { t } from '../lib/i18n'
+
+function WatchProvidersSection({ tmdbId }: { tmdbId: number }) {
+  const { data: providers } = useWatchProviders(tmdbId)
+  if (!providers || (providers.streaming.length === 0 && providers.rent.length === 0)) return null
+
+  const list = providers.streaming.length > 0 ? providers.streaming : providers.rent
+  const label = providers.streaming.length > 0 ? 'Onde assistir' : 'Para alugar'
+
+  return (
+    <div className="px-4 pt-4">
+      <p className="mb-2 text-xs text-ash">{label}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {list.map((p) => (
+          <img
+            key={p.name}
+            src={providerLogoUrl(p.logoPath)}
+            alt={p.name}
+            title={p.name}
+            className="h-9 w-9 rounded-lg"
+          />
+        ))}
+        {providers.justWatchLink && (
+          <a
+            href={providers.justWatchLink}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-1 text-[10px] text-ash underline-offset-2 hover:underline"
+          >
+            via JustWatch
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function ReviewsSection({
   tmdbId,
@@ -172,6 +208,8 @@ export function MoviePage() {
       {movie.overview && (
         <p className="px-4 pt-4 text-sm leading-relaxed text-mist">{movie.overview}</p>
       )}
+
+      <WatchProvidersSection tmdbId={id} />
 
       <div className="flex gap-2 px-4 pt-5">
         <button
