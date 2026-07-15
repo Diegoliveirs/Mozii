@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getMovie, searchMovies } from '../api/tmdb'
+import { getMovie, getWatchProviders, searchMovies } from '../api/tmdb'
 
 export function useDebounced<T>(value: T, delayMs = 400): T {
   const [debounced, setDebounced] = useState(value)
@@ -27,5 +27,14 @@ export function useTmdbMovie(tmdbId: number) {
     queryFn: () => getMovie(tmdbId),
     enabled: Number.isFinite(tmdbId),
     staleTime: 30 * 60_000,
+  })
+}
+
+export function useWatchProviders(tmdbId: number) {
+  return useQuery({
+    queryKey: ['tmdb-providers', tmdbId],
+    queryFn: () => getWatchProviders(tmdbId),
+    enabled: Number.isFinite(tmdbId),
+    staleTime: 24 * 60 * 60_000,
   })
 }

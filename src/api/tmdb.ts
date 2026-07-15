@@ -56,6 +56,40 @@ export function backdropUrl(backdropPath: string | null): string | null {
   return backdropPath ? `${IMAGE_BASE}/w780${backdropPath}` : null
 }
 
+export interface WatchProvider {
+  name: string
+  logoPath: string
+}
+
+export interface WatchProviders {
+  streaming: WatchProvider[]
+  rent: WatchProvider[]
+  justWatchLink: string | null
+}
+
+interface TmdbProvider {
+  provider_name: string
+  logo_path: string
+}
+
+export async function getWatchProviders(tmdbId: number): Promise<WatchProviders> {
+  const data = await get<{
+    results?: { BR?: { link?: string; flatrate?: TmdbProvider[]; rent?: TmdbProvider[] } }
+  }>(`/movie/${tmdbId}/watch/providers`)
+  const br = data.results?.BR
+  const map = (list?: TmdbProvider[]) =>
+    (list ?? []).map((p) => ({ name: p.provider_name, logoPath: p.logo_path }))
+  return {
+    streaming: map(br?.flatrate),
+    rent: map(br?.rent),
+    justWatchLink: br?.link ?? null,
+  }
+}
+
+export function providerLogoUrl(logoPath: string): string {
+  return `${IMAGE_BASE}/w92${logoPath}`
+}
+
 export function posterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' = 'w342'): string | null {
   return posterPath ? `${IMAGE_BASE}/${size}${posterPath}` : null
 }

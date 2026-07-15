@@ -14,8 +14,27 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
   async function generate(): Promise<Blob> {
     const node = cardRef.current
     if (!node) throw new Error('Card não montado')
-    const blob = await toBlob(node, { pixelRatio: 1, width: 1080, height: 1920 })
-    if (!blob) throw new Error('Falha ao gerar imagem')
+
+    await document.fonts.ready
+    await Promise.all(
+      Array.from(node.querySelectorAll('img')).map((img) => img.decode().catch(() => {})),
+    )
+
+    const capture = () => toBlob(node, { pixelRatio: 1, width: 1080, height: 1920, cacheBust: true })
+    const withTimeout = <T,>(p: Promise<T>): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Tempo esgotado ao gerar imagem')), 15_000),
+        ),
+      ])
+
+    // WebKit renderiza vazio na primeira captura — a segunda é a boa
+    await withTimeout(capture())
+    const blob = await withTimeout(capture())
+
+    // card 1080x1920 real com poster nunca é tão pequeno — branco ≈ poucos KB
+    if (!blob || blob.size < 25_000) throw new Error('Imagem gerada em branco')
     return blob
   }
 
