@@ -19,6 +19,14 @@
 
 html {
   background-color: var(--color-night);
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px; /* iOS: input focado com fonte <16px dispara auto-zoom */
 }
 
 body {

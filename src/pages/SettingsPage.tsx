@@ -103,7 +103,7 @@ export function SettingsPage() {
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-40 rounded-xl border border-line-strong bg-card px-3 py-1.5 text-center text-sm text-snow outline-none focus:border-rose"
+              className="w-40 rounded-xl border border-line-strong bg-card px-3 py-1.5 text-center text-base text-snow outline-none focus:border-rose"
             />
             <button
               type="submit"
