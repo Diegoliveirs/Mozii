@@ -26,6 +26,9 @@ export interface CoupleRepository {
   getCouple(): Promise<{ couple: Couple; members: Profile[] } | null>
   updateDisplayName(name: string): Promise<void>
   updateAvatar(path: string): Promise<void>
+  leaveCouple(): Promise<void>
+  requestAccountDeletion(): Promise<void>
+  cancelAccountDeletion(): Promise<void>
 }
 
 export interface ListRepository {

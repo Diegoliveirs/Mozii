@@ -1,15 +1,20 @@
 import { test, expect, type Page } from '@playwright/test'
+import { resetTestUser } from './helpers/reset'
 
-const stamp = Date.now()
-const userA = { name: 'Ana Teste', email: `fable.teste.a.${stamp}@gmail.com`, password: 'senha-teste-123' }
-const userB = { name: 'Diego Teste', email: `fable.teste.b.${stamp}@gmail.com`, password: 'senha-teste-123' }
+// 2 usuários fixos, resetados antes de cada execução — nenhuma conta nova por rodada
+const userA = { name: 'Ana Teste', email: 'mozii.e2e.a@gmail.com', password: 'senha-teste-123' }
+const userB = { name: 'Diego Teste', email: 'mozii.e2e.b@gmail.com', password: 'senha-teste-123' }
 
-async function signup(page: Page, user: typeof userA) {
-  await page.goto('/cadastro')
-  await page.getByPlaceholder('Seu nome').fill(user.name)
+test.beforeAll(async () => {
+  await resetTestUser(userA.email, userA.password, userA.name)
+  await resetTestUser(userB.email, userB.password, userB.name)
+})
+
+async function login(page: Page, user: typeof userA) {
+  await page.goto('/entrar')
   await page.getByPlaceholder('E-mail').fill(user.email)
   await page.getByPlaceholder('Senha').fill(user.password)
-  await page.getByRole('button', { name: 'Criar conta' }).click()
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
 }
 
 test('fluxo completo do casal', async ({ browser }) => {
@@ -22,13 +27,10 @@ test('fluxo completo do casal', async ({ browser }) => {
     }
   })
 
-  // A: cadastro
-  await signup(pageA, userA)
-  await pageA.waitForURL(/\/(parear|entrar)/, { timeout: 15_000 }).catch(() => {})
-  const urlAfterSignup = pageA.url()
-  console.log('[A] pós-cadastro:', urlAfterSignup, apiErrors.length ? `| erros API: ${apiErrors.join(' ; ')}` : '')
-
-  expect(urlAfterSignup, 'cadastro deve levar a /parear (se ficou em /cadastro ou /entrar, confirmação de e-mail está ativa no Supabase)').toContain('/parear')
+  // A: login (usuário fixo, sem casal após o reset — cai no pareamento)
+  await login(pageA, userA)
+  await pageA.waitForURL(/\/parear/, { timeout: 15_000 })
+  console.log('[A] logado, no pareamento', apiErrors.length ? `| erros API: ${apiErrors.join(' ; ')}` : '')
 
   // A: cria espaço, pega código
   await pageA.getByText('Criar nosso espaço').click()
@@ -39,10 +41,10 @@ test('fluxo completo do casal', async ({ browser }) => {
   await pageA.getByRole('button', { name: 'Continuar' }).click()
   await expect(pageA).toHaveURL('/', { timeout: 10_000 })
 
-  // B: cadastro + entra com código
+  // B: login + entra com código
   const contextB = await browser.newContext()
   const pageB = await contextB.newPage()
-  await signup(pageB, userB)
+  await login(pageB, userB)
   await pageB.waitForURL(/\/parear/, { timeout: 15_000 })
   await pageB.getByPlaceholder('código de 6 letras').fill(code)
   await pageB.getByRole('button', { name: 'Entrar no espaço' }).click()
@@ -65,12 +67,12 @@ test('fluxo completo do casal', async ({ browser }) => {
   await pageA.locator('textarea').fill('Teste automatizado: filme excelente.')
   await pageA.getByRole('button', { name: 'Publicar' }).click()
   await expect(pageA).toHaveURL('/', { timeout: 10_000 })
-  await expect(pageA.getByText('Cidade de Deus')).toBeVisible({ timeout: 10_000 })
+  await expect(pageA.getByRole('link', { name: /Cidade de Deus/ })).toBeVisible({ timeout: 10_000 })
   console.log('[A] review publicada no feed')
 
   // B: vê a review no feed
   await pageB.goto('/')
-  await expect(pageB.getByText('Cidade de Deus')).toBeVisible({ timeout: 10_000 })
+  await expect(pageB.getByRole('link', { name: /Cidade de Deus/ })).toBeVisible({ timeout: 10_000 })
   await expect(pageB.getByText('Teste automatizado: filme excelente.')).toBeVisible()
   console.log('[B] review visível no feed do par')
 
@@ -147,6 +149,42 @@ test('fluxo completo do casal', async ({ browser }) => {
   })
   await expect(pageA.locator('img.rounded-full').first()).toBeVisible({ timeout: 15_000 })
   console.log('[A] nome e avatar atualizados, estatísticas visíveis')
+
+  // ---- v5: sair do casal + excluir conta ----
+
+  // B sai do espaço
+  await pageB.goto('/perfil')
+  await pageB.getByRole('button', { name: 'Sair do espaço' }).click()
+  await pageB.locator('.fixed').getByRole('button', { name: 'Sair', exact: true }).click()
+  await pageB.waitForURL('**/parear', { timeout: 10_000 })
+  console.log('[B] saiu do espaço, caiu no pareamento')
+
+  // conteúdo de B continua para A
+  await pageA.goto('/')
+  await expect(pageA.getByText('Nota do par.')).toBeVisible({ timeout: 10_000 })
+  console.log('[A] conteúdo de quem saiu permanece no feed')
+
+  // B entra de novo com o mesmo código
+  await pageB.getByPlaceholder('código de 6 letras').fill(code)
+  await pageB.getByRole('button', { name: 'Entrar no espaço' }).click()
+  await pageB.waitForURL(/\/$/, { timeout: 10_000 })
+  console.log('[B] re-pareado com o mesmo código')
+
+  // B pede exclusão de conta e volta ao login
+  await pageB.goto('/perfil')
+  await pageB.getByRole('button', { name: 'Excluir conta' }).click()
+  await pageB.locator('.fixed').getByRole('button', { name: 'Excluir conta' }).click()
+  await pageB.waitForURL('**/entrar', { timeout: 10_000 })
+  console.log('[B] exclusão agendada, deslogado')
+
+  // B reloga dentro da janela — cancela e app funciona normal
+  await pageB.getByPlaceholder('E-mail').fill(userB.email)
+  await pageB.getByPlaceholder('Senha').fill(userB.password)
+  await pageB.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await pageB.waitForURL(/\/$/, { timeout: 15_000 })
+  await pageB.goto('/perfil')
+  await expect(pageB.getByText('Nossos números')).toBeVisible({ timeout: 10_000 })
+  console.log('[B] relogin cancelou exclusão, perfil normal')
 
   console.log('FLUXO COMPLETO OK', apiErrors.length ? `| erros API acumulados: ${apiErrors.join(' ; ')}` : '| zero erros de API')
 })

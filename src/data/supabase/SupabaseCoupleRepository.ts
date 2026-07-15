@@ -45,6 +45,21 @@ export class SupabaseCoupleRepository implements CoupleRepository {
     if (error) throw error
   }
 
+  async leaveCouple(): Promise<void> {
+    const { error } = await supabase.rpc('leave_couple')
+    if (error) throw error
+  }
+
+  async requestAccountDeletion(): Promise<void> {
+    const { error } = await supabase.rpc('request_account_deletion')
+    if (error) throw error
+  }
+
+  async cancelAccountDeletion(): Promise<void> {
+    const { error } = await supabase.rpc('cancel_account_deletion')
+    if (error) throw error
+  }
+
   async updateAvatar(path: string): Promise<void> {
     const { data: session } = await supabase.auth.getSession()
     const uid = session.session?.user.id

@@ -12,6 +12,14 @@ export const t = {
     hasAccount: 'Já tem conta? Entre',
     signOut: 'Sair',
   },
+  danger: {
+    leaveCouple: 'Sair do espaço',
+    leaveConfirm: 'Sair do espaço? Você perde o acesso ao feed e às listas; o que você postou continua lá para quem ficou.',
+    leave: 'Sair',
+    deleteAccount: 'Excluir conta',
+    deleteConfirm: 'Todos os seus dados (posts, reviews, listas, fotos) serão apagados em 30 minutos. Entrar de novo no app dentro desse tempo cancela a exclusão.',
+    deleteScheduled: 'Exclusão agendada. Entre de novo em até 30 minutos para cancelar.',
+  },
   pairing: {
     createSpace: 'Criar nosso espaço',
     createHint: 'Gere um código e convide seu par',

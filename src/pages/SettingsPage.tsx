@@ -2,9 +2,16 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRepositories } from '../data/RepositoriesContext'
 import { useCouple, useMyProfile } from '../hooks/useCouple'
-import { useReviewStats, useUpdateAvatar, useUpdateDisplayName } from '../hooks/useProfile'
+import {
+  useLeaveCouple,
+  useRequestDeletion,
+  useReviewStats,
+  useUpdateAvatar,
+  useUpdateDisplayName,
+} from '../hooks/useProfile'
 import { useLists } from '../hooks/useLists'
 import { ProfileAvatar } from '../components/feed/ProfileAvatar'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { t } from '../lib/i18n'
 
 function StatsSection() {
@@ -53,9 +60,13 @@ export function SettingsPage() {
   const { data: coupleData } = useCouple()
   const updateName = useUpdateDisplayName()
   const updateAvatar = useUpdateAvatar()
+  const leaveCouple = useLeaveCouple()
+  const requestDeletion = useRequestDeletion()
   const fileInput = useRef<HTMLInputElement>(null)
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState('')
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const [confirmDeletion, setConfirmDeletion] = useState(false)
 
   const myIndex = coupleData?.members.findIndex((m) => m.id === profile?.id) ?? 0
   const partner = coupleData?.members.find((m) => m.id !== profile?.id)
@@ -73,6 +84,18 @@ export function SettingsPage() {
   }
 
   async function handleSignOut() {
+    await auth.signOut()
+    navigate('/entrar')
+  }
+
+  async function handleLeaveCouple() {
+    await leaveCouple.mutateAsync()
+    setConfirmLeave(false)
+    navigate('/parear')
+  }
+
+  async function handleDeleteAccount() {
+    await requestDeletion.mutateAsync()
     await auth.signOut()
     navigate('/entrar')
   }
@@ -157,7 +180,42 @@ export function SettingsPage() {
         >
           {t.auth.signOut}
         </button>
+
+        <div className="rounded-2xl border border-rose/30 p-4">
+          <p className="mb-3 text-xs text-ash">Zona de perigo</p>
+          {profile?.coupleId && (
+            <button
+              onClick={() => setConfirmLeave(true)}
+              className="mb-2 w-full rounded-xl border border-line-strong py-3 text-sm text-rose-soft transition-transform active:scale-[0.97]"
+            >
+              {t.danger.leaveCouple}
+            </button>
+          )}
+          <button
+            onClick={() => setConfirmDeletion(true)}
+            className="w-full rounded-xl bg-rose/15 py-3 text-sm font-medium text-rose-soft transition-transform active:scale-[0.97]"
+          >
+            {t.danger.deleteAccount}
+          </button>
+        </div>
       </div>
+
+      {confirmLeave && (
+        <ConfirmDialog
+          message={t.danger.leaveConfirm}
+          confirmLabel={t.danger.leave}
+          onConfirm={handleLeaveCouple}
+          onCancel={() => setConfirmLeave(false)}
+        />
+      )}
+      {confirmDeletion && (
+        <ConfirmDialog
+          message={t.danger.deleteConfirm}
+          confirmLabel={t.danger.deleteAccount}
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setConfirmDeletion(false)}
+        />
+      )}
     </div>
   )
 }

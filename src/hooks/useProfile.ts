@@ -32,6 +32,23 @@ export function useUpdateAvatar() {
   })
 }
 
+export function useLeaveCouple() {
+  const { couple } = useRepositories()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => couple.leaveCouple(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['profile'] })
+      qc.invalidateQueries({ queryKey: ['couple'] })
+    },
+  })
+}
+
+export function useRequestDeletion() {
+  const { couple } = useRepositories()
+  return useMutation({ mutationFn: () => couple.requestAccountDeletion() })
+}
+
 export function useReviewStats() {
   const { feed } = useRepositories()
   const { data: profile } = useMyProfile()

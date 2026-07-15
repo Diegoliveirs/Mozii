@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useMyProfile } from './hooks/useCouple'
+import { useRepositories } from './data/RepositoriesContext'
 import { AppShell } from './components/layout/AppShell'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
@@ -25,6 +27,13 @@ function Loading() {
 
 function RequireAuth() {
   const { user, loading } = useAuth()
+  const { couple } = useRepositories()
+
+  // qualquer entrada no app (login ou sessão salva) cancela exclusão pendente
+  useEffect(() => {
+    if (user) couple.cancelAccountDeletion().catch(() => {})
+  }, [user, couple])
+
   if (loading) return <Loading />
   if (!user) return <Navigate to="/entrar" replace />
   return <Outlet />
