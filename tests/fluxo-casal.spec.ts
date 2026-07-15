@@ -148,5 +148,41 @@ test('fluxo completo do casal', async ({ browser }) => {
   await expect(pageA.locator('img.rounded-full').first()).toBeVisible({ timeout: 15_000 })
   console.log('[A] nome e avatar atualizados, estatísticas visíveis')
 
+  // ---- v5: sair do casal + excluir conta ----
+
+  // B sai do espaço
+  await pageB.goto('/perfil')
+  await pageB.getByRole('button', { name: 'Sair do espaço' }).click()
+  await pageB.locator('.fixed').getByRole('button', { name: 'Sair', exact: true }).click()
+  await pageB.waitForURL('**/parear', { timeout: 10_000 })
+  console.log('[B] saiu do espaço, caiu no pareamento')
+
+  // conteúdo de B continua para A
+  await pageA.goto('/')
+  await expect(pageA.getByText('Nota do par.')).toBeVisible({ timeout: 10_000 })
+  console.log('[A] conteúdo de quem saiu permanece no feed')
+
+  // B entra de novo com o mesmo código
+  await pageB.getByPlaceholder('código de 6 letras').fill(code)
+  await pageB.getByRole('button', { name: 'Entrar no espaço' }).click()
+  await pageB.waitForURL(/\/$/, { timeout: 10_000 })
+  console.log('[B] re-pareado com o mesmo código')
+
+  // B pede exclusão de conta e volta ao login
+  await pageB.goto('/perfil')
+  await pageB.getByRole('button', { name: 'Excluir conta' }).click()
+  await pageB.locator('.fixed').getByRole('button', { name: 'Excluir conta' }).click()
+  await pageB.waitForURL('**/entrar', { timeout: 10_000 })
+  console.log('[B] exclusão agendada, deslogado')
+
+  // B reloga dentro da janela — cancela e app funciona normal
+  await pageB.getByPlaceholder('E-mail').fill(userB.email)
+  await pageB.getByPlaceholder('Senha').fill(userB.password)
+  await pageB.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await pageB.waitForURL(/\/$/, { timeout: 15_000 })
+  await pageB.goto('/perfil')
+  await expect(pageB.getByText('Nossos números')).toBeVisible({ timeout: 10_000 })
+  console.log('[B] relogin cancelou exclusão, perfil normal')
+
   console.log('FLUXO COMPLETO OK', apiErrors.length ? `| erros API acumulados: ${apiErrors.join(' ; ')}` : '| zero erros de API')
 })
