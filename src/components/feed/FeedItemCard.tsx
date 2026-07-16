@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Post, Profile, Reaction } from '../../domain/types'
 import { usePhotoUrl } from '../../hooks/useFeed'
@@ -5,6 +6,7 @@ import { timeAgo } from '../../lib/dates'
 import { t } from '../../lib/i18n'
 import { ProfileAvatar } from './ProfileAvatar'
 import { ReactionBar } from './ReactionBar'
+import { CommentSection } from './CommentSection'
 import { Poster } from '../movies/Poster'
 import { StarRating } from '../movies/StarRating'
 
@@ -13,6 +15,9 @@ interface Props {
   members: Profile[]
   reactions: Reaction[]
   onShare?: (post: Post) => void
+  // presente = ícone de comentário expande a seção inline (feed);
+  // ausente = sem ícone (página da publicação já mostra os comentários)
+  commentCount?: number
 }
 
 function AuthorHeader({ post, members, action }: { post: Post; members: Profile[]; action?: string }) {
@@ -37,7 +42,9 @@ function PostPhoto({ photoPath }: { photoPath: string }) {
   return <img src={url} alt="" className="mb-2 max-h-96 w-full rounded-xl object-cover" />
 }
 
-export function FeedItemCard({ post, members, reactions, onShare }: Props) {
+export function FeedItemCard({ post, members, reactions, onShare, commentCount }: Props) {
+  const [commentsOpen, setCommentsOpen] = useState(false)
+
   if (post.type === 'activity') {
     const authorIndex = members.findIndex((m) => m.id === post.authorId)
     const author = members[authorIndex]
@@ -97,13 +104,23 @@ export function FeedItemCard({ post, members, reactions, onShare }: Props) {
               </svg>
             </button>
           )}
-          <Link to={`/post/${post.id}`} aria-label="Comentários" className="text-ash">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M8 9h8M8 13h6M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-5l-5 3v-3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h12z" />
-            </svg>
-          </Link>
+          {commentCount !== undefined && (
+            <button
+              onClick={() => setCommentsOpen((v) => !v)}
+              aria-label={t.comments.aria}
+              aria-expanded={commentsOpen}
+              className={`flex items-center gap-1 ${commentsOpen ? 'text-rose-soft' : 'text-ash'}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M8 9h8M8 13h6M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-5l-5 3v-3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h12z" />
+              </svg>
+              {commentCount > 0 && <span className="text-[11px]">{commentCount}</span>}
+            </button>
+          )}
         </div>
       </div>
+
+      {commentsOpen && <CommentSection postId={post.id} showOpenLink />}
     </article>
   )
 }

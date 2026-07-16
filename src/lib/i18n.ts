@@ -53,6 +53,12 @@ export const t = {
     movies: 'filmes',
     seen: 'vistos',
   },
+  comments: {
+    placeholder: 'Comentar…',
+    send: 'Enviar',
+    open: 'Abrir publicação',
+    aria: 'Comentários',
+  },
   share: { share: 'Compartilhar', download: 'Baixar imagem', reviewedTogether: 'avaliado a dois' },
   common: { save: 'Salvar', cancel: 'Cancelar', delete: 'Excluir', error: 'Algo deu errado. Tente de novo.', loading: 'Carregando…' },
 }

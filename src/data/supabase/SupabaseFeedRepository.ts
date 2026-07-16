@@ -129,6 +129,21 @@ export class SupabaseFeedRepository implements FeedRepository {
     return data.map(mapComment)
   }
 
+  async getCommentCounts(postIds: string[]): Promise<Record<string, number>> {
+    if (postIds.length === 0) return {}
+    const { data, error } = await supabase
+      .from('comments')
+      .select('post_id')
+      .in('post_id', postIds)
+    if (error) throw error
+    const counts: Record<string, number> = {}
+    for (const row of data) {
+      const id = row.post_id as string
+      counts[id] = (counts[id] ?? 0) + 1
+    }
+    return counts
+  }
+
   async addComment(postId: string, body: string): Promise<Comment> {
     const uid = await currentUserId()
     const { data, error } = await supabase

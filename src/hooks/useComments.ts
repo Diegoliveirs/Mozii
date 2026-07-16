@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Reaction } from '../domain/types'
+import type { Comment, Reaction } from '../domain/types'
 import { useRepositories } from '../data/RepositoriesContext'
 import { useMyProfile } from './useCouple'
 
@@ -12,12 +12,46 @@ export function useComments(postId: string) {
   })
 }
 
+export function useCommentCounts(postIds: string[]) {
+  const { feed } = useRepositories()
+  return useQuery({
+    queryKey: ['comment-counts', ...postIds],
+    queryFn: () => feed.getCommentCounts(postIds),
+    enabled: postIds.length > 0,
+  })
+}
+
 export function useAddComment(postId: string) {
   const { feed } = useRepositories()
+  const { data: profile } = useMyProfile()
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: string) => feed.addComment(postId, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', postId] }),
+    // otimismo espelhado no useToggleReaction: aparece na hora, reverte em erro
+    onMutate: async (body) => {
+      await qc.cancelQueries({ queryKey: ['comments', postId] })
+      const snapshot = qc.getQueryData<Comment[]>(['comments', postId])
+      if (profile) {
+        qc.setQueryData<Comment[]>(['comments', postId], (old) => [
+          ...(old ?? []),
+          {
+            id: `otimista-${Date.now()}`,
+            postId,
+            authorId: profile.id,
+            body,
+            createdAt: new Date().toISOString(),
+          },
+        ])
+      }
+      return { snapshot }
+    },
+    onError: (_err, _body, ctx) => {
+      if (ctx && ctx.snapshot !== undefined) qc.setQueryData(['comments', postId], ctx.snapshot)
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['comments', postId] })
+      qc.invalidateQueries({ queryKey: ['comment-counts'] })
+    },
   })
 }
 

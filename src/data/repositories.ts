@@ -58,6 +58,7 @@ export interface FeedRepository {
   getMovieReviews(coupleId: string, tmdbId: number): Promise<Post[]>
   getReviewStats(coupleId: string): Promise<{ authorId: string; rating: number; createdAt: string }[]>
   getComments(postId: string): Promise<Comment[]>
+  getCommentCounts(postIds: string[]): Promise<Record<string, number>>
   addComment(postId: string, body: string): Promise<Comment>
   toggleReaction(postId: string, emoji: string): Promise<void>
   getReactions(postIds: string[]): Promise<Record<string, Reaction[]>>
