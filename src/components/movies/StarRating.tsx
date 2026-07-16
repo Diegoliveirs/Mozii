@@ -1,5 +1,8 @@
+import { useId } from 'react'
+
 function Star({ fill }: { fill: number }) {
-  const id = `star-${Math.random().toString(36).slice(2, 8)}`
+  // useId() traz ':' — inválido em url(#) de SVG; removemos para um id seguro
+  const id = `star-${useId().replace(/:/g, '')}`
   return (
     <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true">
       <defs>
