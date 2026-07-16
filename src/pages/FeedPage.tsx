@@ -19,7 +19,7 @@ export function FeedPage() {
   const members = coupleData?.members ?? []
 
   return (
-    <div className="px-3 pt-4">
+    <div className="px-3 pt-[calc(1rem+env(safe-area-inset-top))]">
       <div className="mb-4 flex items-center justify-between px-1">
         <span className="font-voice text-2xl text-snow">{t.appName}</span>
         {members.length === 2 && (

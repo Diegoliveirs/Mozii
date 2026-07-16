@@ -18,7 +18,7 @@ export function ListsPage() {
   }
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))]">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-lg font-medium text-snow">Nossas listas</h1>
         <button

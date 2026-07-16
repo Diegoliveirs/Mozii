@@ -10,7 +10,7 @@ export function SearchPage() {
 
   return (
     <div className="px-4 pt-4">
-      <div className="sticky top-0 z-10 -mx-4 bg-night px-4 pt-2 pb-3">
+      <div className="sticky top-0 z-10 -mx-4 bg-night px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-3">
         <input
           autoFocus
           value={query}
