@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Post } from '../../domain/types'
 import { useCouple } from '../../hooks/useCouple'
+import { usePhotoUrl } from '../../hooks/useFeed'
 import { renderShareCard } from '../../lib/renderShareCard'
 import { ShareCard } from './ShareCard'
 import { t } from '../../lib/i18n'
@@ -10,11 +11,19 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const members = coupleData?.members ?? []
+  const authorIndex = Math.max(
+    members.findIndex((m) => m.id === post.authorId),
+    0,
+  )
+  const author = members.find((m) => m.id === post.authorId)
+  const { data: avatarUrl } = usePhotoUrl(author?.avatarUrl ?? null)
+
   async function handleShare() {
     setBusy(true)
     setError(null)
     try {
-      const blob = await renderShareCard(post, coupleData?.members ?? [])
+      const blob = await renderShareCard(post, author, avatarUrl ?? null, authorIndex)
       const file = new File([blob], 'mozii-review.png', { type: 'image/png' })
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file] })
@@ -47,7 +56,7 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
               transformOrigin: 'top left',
             }}
           >
-            <ShareCard post={post} members={coupleData?.members ?? []} />
+            <ShareCard post={post} author={author} avatarUrl={avatarUrl ?? null} authorIndex={authorIndex} />
           </div>
         </div>
 

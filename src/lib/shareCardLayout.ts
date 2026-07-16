@@ -8,7 +8,16 @@ export const CARD = {
   padding: 80,
   fontStack: 'system-ui, sans-serif',
   serifStack: 'Georgia, serif',
-  header: { size: 44, color: '#8d8499', marginBottom: 60 },
+  author: {
+    avatarSize: 112,
+    gap: 28,
+    nameSize: 44,
+    nameColor: '#c3bccd',
+    marginBottom: 56,
+    // mesmas cores de fallback do ProfileAvatar (bg-rose e roxo)
+    fallbackColors: ['#d4537e', '#534ab7'],
+    fallbackText: '#ffffff',
+  },
   poster: {
     width: 480,
     height: 720,

@@ -6,10 +6,20 @@ import { StarRating } from '../movies/StarRating'
 
 // Preview visual do share card. O PNG exportado é desenhado em canvas por
 // renderShareCard.ts a partir das MESMAS constantes de shareCardLayout.ts.
-export function ShareCard({ post, members }: { post: Post; members: Profile[] }) {
+export function ShareCard({
+  post,
+  author,
+  avatarUrl,
+  authorIndex = 0,
+}: {
+  post: Post
+  author: Profile | undefined
+  avatarUrl: string | null
+  authorIndex?: number
+}) {
   const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
   const url = baseUrl ? `${baseUrl}?share=1` : null
-  const names = members.map((m) => m.displayName).join(' ♥ ')
+  const authorName = author?.displayName ?? t.appName
   const snippet = post.body && post.body.length > 140 ? `${post.body.slice(0, 140)}…` : post.body
 
   return (
@@ -28,16 +38,48 @@ export function ShareCard({ post, members }: { post: Post; members: Profile[] })
         fontFamily: CARD.fontStack,
       }}
     >
-      <p
+      <div
         style={{
-          fontFamily: CARD.serifStack,
-          fontSize: CARD.header.size,
-          color: CARD.header.color,
-          margin: `0 0 ${CARD.header.marginBottom}px`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: CARD.author.gap,
+          marginBottom: CARD.author.marginBottom,
         }}
       >
-        {t.appName} · {names}
-      </p>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            style={{
+              width: CARD.author.avatarSize,
+              height: CARD.author.avatarSize,
+              borderRadius: '50%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <span
+            style={{
+              width: CARD.author.avatarSize,
+              height: CARD.author.avatarSize,
+              borderRadius: '50%',
+              background:
+                CARD.author.fallbackColors[authorIndex % CARD.author.fallbackColors.length],
+              color: CARD.author.fallbackText,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: CARD.author.avatarSize * 0.42,
+              fontWeight: 500,
+            }}
+          >
+            {authorName.slice(0, 1).toUpperCase()}
+          </span>
+        )}
+        <span style={{ fontSize: CARD.author.nameSize, fontWeight: 500, color: CARD.author.nameColor }}>
+          {authorName}
+        </span>
+      </div>
       {url ? (
         <img
           src={url}
