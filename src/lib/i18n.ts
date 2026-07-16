@@ -53,6 +53,7 @@ export const t = {
     movies: 'filmes',
     seen: 'vistos',
   },
+  reactions: { react: 'Reagir', more: 'Mais reações' },
   comments: {
     placeholder: 'Comentar…',
     send: 'Enviar',
