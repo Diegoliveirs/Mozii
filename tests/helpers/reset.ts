@@ -1,25 +1,4 @@
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-function loadEnv(): { url: string; key: string } {
-  const here = dirname(fileURLToPath(import.meta.url))
-  const raw = readFileSync(resolve(here, '../../.env.local'), 'utf-8')
-  const get = (name: string) => raw.match(new RegExp(`^${name}=(.+)$`, 'm'))?.[1].trim() ?? ''
-  return { url: get('VITE_SUPABASE_URL'), key: get('VITE_SUPABASE_ANON_KEY') }
-}
-
-const { url: BASE, key: KEY } = loadEnv()
-
-async function api(path: string, token: string | null, init: RequestInit = {}) {
-  const headers: Record<string, string> = {
-    apikey: KEY,
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...((init.headers as Record<string, string>) ?? {}),
-  }
-  return fetch(`${BASE}${path}`, { ...init, headers })
-}
+import { api } from './api'
 
 /**
  * Garante que o usuário de teste existe e está zerado:
