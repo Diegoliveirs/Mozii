@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import {
   useInfiniteQuery,
   useMutation,
@@ -9,18 +8,12 @@ import type { MovieRef } from '../domain/types'
 import { useRepositories } from '../data/RepositoriesContext'
 import { useMyProfile } from './useCouple'
 
+// a subscription realtime vive em useRealtimeCouple (montado no AppShell)
+
 export function useFeedInfinite() {
   const { feed } = useRepositories()
   const { data: profile } = useMyProfile()
   const coupleId = profile?.coupleId
-  const qc = useQueryClient()
-
-  useEffect(() => {
-    if (!coupleId || !feed.subscribeToFeed) return
-    return feed.subscribeToFeed(coupleId, () => {
-      qc.invalidateQueries({ queryKey: ['feed', coupleId] })
-    })
-  }, [coupleId, feed, qc])
 
   return useInfiniteQuery({
     queryKey: ['feed', coupleId],
