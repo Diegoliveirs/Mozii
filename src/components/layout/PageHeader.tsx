@@ -13,7 +13,7 @@ export function PageHeader({
   const navigate = useNavigate()
 
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-3 bg-night/85 px-4 py-3 backdrop-blur">
+    <header className="sticky top-0 z-10 flex items-center gap-3 bg-night/85 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur">
       <button
         onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
         aria-label="Voltar"
