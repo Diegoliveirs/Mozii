@@ -9,6 +9,7 @@ import { useListsContaining } from '../hooks/useLists'
 import { Poster } from '../components/movies/Poster'
 import { StarRating } from '../components/movies/StarRating'
 import { AddToListSheet } from '../components/movies/AddToListSheet'
+import { ShareCardModal } from '../components/share/ShareCardModal'
 import { ProfileAvatar } from '../components/feed/ProfileAvatar'
 import { PageHeader } from '../components/layout/PageHeader'
 import { backdropUrl } from '../api/tmdb'
@@ -53,9 +54,11 @@ function WatchProvidersSection({ tmdbId }: { tmdbId: number }) {
 function ReviewsSection({
   tmdbId,
   onEdit,
+  onShare,
 }: {
   tmdbId: number
   onEdit: (review: Post) => void
+  onShare: (review: Post) => void
 }) {
   const { data: reviews } = useMovieReviews(tmdbId)
   const { data: coupleData } = useCouple()
@@ -103,16 +106,21 @@ function ReviewsSection({
                     {author?.displayName}{' '}
                     <span className="font-normal text-ash">{timeAgo(review.createdAt)}</span>
                   </p>
-                  {isMine && (
-                    <span className="flex gap-2 text-[11px]">
-                      <button onClick={() => onEdit(review)} className="text-ash underline-offset-2 hover:underline">
-                        editar
-                      </button>
-                      <button onClick={() => handleDelete(review)} className="text-rose-soft underline-offset-2 hover:underline">
-                        excluir
-                      </button>
-                    </span>
-                  )}
+                  <span className="flex gap-2 text-[11px]">
+                    <button onClick={() => onShare(review)} className="text-ash underline-offset-2 hover:underline">
+                      compartilhar
+                    </button>
+                    {isMine && (
+                      <>
+                        <button onClick={() => onEdit(review)} className="text-ash underline-offset-2 hover:underline">
+                          editar
+                        </button>
+                        <button onClick={() => handleDelete(review)} className="text-rose-soft underline-offset-2 hover:underline">
+                          excluir
+                        </button>
+                      </>
+                    )}
+                  </span>
                 </div>
                 {review.rating !== null && (
                   <div className="mt-0.5">
@@ -138,6 +146,7 @@ export function MoviePage() {
   const createReview = useCreateReview()
   const updateReview = useUpdateReview()
   const [showSheet, setShowSheet] = useState(false)
+  const [sharePost, setSharePost] = useState<Post | null>(null)
   const [showReview, setShowReview] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [rating, setRating] = useState(0)
@@ -252,9 +261,10 @@ export function MoviePage() {
         </form>
       )}
 
-      <ReviewsSection tmdbId={id} onEdit={startEdit} />
+      <ReviewsSection tmdbId={id} onEdit={startEdit} onShare={setSharePost} />
 
       {showSheet && <AddToListSheet movie={movie} onClose={() => setShowSheet(false)} />}
+      {sharePost && <ShareCardModal post={sharePost} onClose={() => setSharePost(null)} />}
     </div>
   )
 }
