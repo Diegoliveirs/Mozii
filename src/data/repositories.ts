@@ -62,7 +62,7 @@ export interface FeedRepository {
   addComment(postId: string, body: string): Promise<Comment>
   toggleReaction(postId: string, emoji: string): Promise<void>
   getReactions(postIds: string[]): Promise<Record<string, Reaction[]>>
-  subscribeToFeed?(coupleId: string, onChange: () => void): Unsubscribe
+  subscribeToCouple?(coupleId: string, onChange: (table: string) => void): Unsubscribe
 }
 
 export interface StorageRepository {

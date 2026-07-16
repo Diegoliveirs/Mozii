@@ -188,15 +188,25 @@ export class SupabaseFeedRepository implements FeedRepository {
     return grouped
   }
 
-  subscribeToFeed(coupleId: string, onChange: () => void): Unsubscribe {
-    const channel = supabase
-      .channel(`feed-${coupleId}`)
-      .on(
+  subscribeToCouple(coupleId: string, onChange: (table: string) => void): Unsubscribe {
+    // posts/lists têm couple_id — filtro no canal. comments/reactions/list_items
+    // não têm a coluna: canal sem filtro, a RLS de SELECT escopa a entrega.
+    let channel = supabase.channel(`couple-${coupleId}`)
+    const tables: { table: string; filter?: string }[] = [
+      { table: 'posts', filter: `couple_id=eq.${coupleId}` },
+      { table: 'lists', filter: `couple_id=eq.${coupleId}` },
+      { table: 'comments' },
+      { table: 'reactions' },
+      { table: 'list_items' },
+    ]
+    for (const { table, filter } of tables) {
+      channel = channel.on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts', filter: `couple_id=eq.${coupleId}` },
-        onChange,
+        { event: '*', schema: 'public', table, ...(filter ? { filter } : {}) },
+        () => onChange(table),
       )
-      .subscribe()
+    }
+    channel.subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
