@@ -46,7 +46,9 @@ export function StarRating({
           className="relative"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect()
-            const half = e.clientX - rect.left < rect.width / 2
+            // clientX é inteiro, mas rect pode ter posição fracionária: sem 1px de
+            // folga, um clique no centro exato cai na metade esquerda (meia estrela)
+            const half = e.clientX - rect.left < rect.width / 2 - 1
             onChange(half ? s - 0.5 : s)
           }}
           aria-label={`${s} estrelas`}
