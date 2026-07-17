@@ -105,7 +105,11 @@ Deno.serve(async (req) => {
       }
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const sub = event.data.object as Stripe.Subscription
+        // created/updated chegam no MESMO segundo e a entrega não tem ordem
+        // garantida — um created (incomplete) atrasado sobrescrevia o updated
+        // (active). Busca o estado ATUAL na API em vez de confiar no snapshot.
+        const evSub = event.data.object as Stripe.Subscription
+        const sub = await stripe.subscriptions.retrieve(evSub.id)
         const coupleId = await resolveCoupleId(
           sub.metadata as Record<string, string>,
           null,
