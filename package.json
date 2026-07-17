@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@playwright/mcp": "^0.0.78",
+    "@stripe/stripe-js": "^9.10.0",
     "@supabase/supabase-js": "^2.110.5",
     "@tanstack/react-query": "^5.101.2",
     "date-fns": "^4.4.0",

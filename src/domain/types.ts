@@ -70,6 +70,21 @@ export interface Post {
   createdAt: string
 }
 
+export type PremiumPlan = 'weekly' | 'monthly' | 'lifetime'
+
+/** Estado premium do espaço — espelho do get_entitlement() do banco. */
+export interface Entitlement {
+  isPremium: boolean
+  trialEndsAt: string | null
+  plan: PremiumPlan | null
+  status: string | null
+  isLifetime: boolean
+  currentPeriodEnd: string | null
+  priceAmount: number | null
+  currency: string | null
+  cancelAtPeriodEnd: boolean
+}
+
 export interface Comment {
   id: string
   postId: string
