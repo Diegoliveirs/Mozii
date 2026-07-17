@@ -134,4 +134,22 @@ test('card de compartilhamento gera PNG real com poster', async ({ page }, testI
     `poster com conteúdo real (${result.tilesComConteudo}/${result.tiles} tiles com variância)`,
   ).toBeGreaterThanOrEqual(0.3)
   await expect(page.getByText('Algo deu errado')).toBeHidden()
+
+  // compartilhar também pela página do filme (botão na avaliação)
+  await page.evaluate(() => {
+    ;(window as unknown as { __lastBlob?: Blob }).__lastBlob = undefined
+  })
+  await page.goto('/buscar')
+  await page.getByPlaceholder('Buscar filme…').fill('cidade de deus')
+  await page.locator('ul a').first().click()
+  await page.getByRole('button', { name: 'compartilhar', exact: true }).click()
+  await page.locator('.fixed').getByRole('button', { name: 'Compartilhar' }).click()
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => (window as unknown as { __lastBlob?: Blob }).__lastBlob?.size ?? 0),
+      { timeout: 45_000 },
+    )
+    .toBeGreaterThan(25_000)
+  await expect(page.getByText('Algo deu errado')).toBeHidden()
 })

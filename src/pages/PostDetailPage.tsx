@@ -1,35 +1,25 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { usePost, useDeletePost } from '../hooks/useFeed'
-import { useComments, useAddComment, useReactions } from '../hooks/useComments'
+import { useReactions } from '../hooks/useComments'
 import { useCouple, useMyProfile } from '../hooks/useCouple'
 import { FeedItemCard } from '../components/feed/FeedItemCard'
-import { ProfileAvatar } from '../components/feed/ProfileAvatar'
+import { CommentSection } from '../components/feed/CommentSection'
 import { PageHeader } from '../components/layout/PageHeader'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { timeAgo } from '../lib/dates'
 import { t } from '../lib/i18n'
 
 export function PostDetailPage() {
   const { postId = '' } = useParams()
   const navigate = useNavigate()
   const { data: post, isLoading } = usePost(postId)
-  const { data: comments } = useComments(postId)
   const { data: reactions } = useReactions(postId ? [postId] : [])
   const { data: coupleData } = useCouple()
   const { data: profile } = useMyProfile()
-  const addComment = useAddComment(postId)
   const deletePost = useDeletePost()
-  const [body, setBody] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const members = coupleData?.members ?? []
-
-  async function handleComment(e: React.FormEvent) {
-    e.preventDefault()
-    await addComment.mutateAsync(body.trim())
-    setBody('')
-  }
 
   async function handleDelete() {
     await deletePost.mutateAsync(postId)
@@ -61,40 +51,9 @@ export function PostDetailPage() {
       <div className="px-3">
       <FeedItemCard post={post} members={members} reactions={reactions?.[post.id] ?? []} />
 
-      <div className="mt-4 space-y-3 px-1">
-        {comments?.map((comment) => {
-          const authorIndex = members.findIndex((m) => m.id === comment.authorId)
-          const author = members[authorIndex]
-          return (
-            <div key={comment.id} className="flex gap-2.5">
-              <ProfileAvatar profile={author} index={Math.max(authorIndex, 0)} />
-              <div className="min-w-0 flex-1 rounded-xl bg-card px-3 py-2">
-                <p className="text-xs font-medium text-snow">
-                  {author?.displayName}{' '}
-                  <span className="font-normal text-ash">{timeAgo(comment.createdAt)}</span>
-                </p>
-                <p className="mt-0.5 text-sm text-mist">{comment.body}</p>
-              </div>
-            </div>
-          )
-        })}
+      <div className="px-1 pb-4">
+        <CommentSection postId={postId} />
       </div>
-
-      <form onSubmit={handleComment} className="mt-4 flex gap-2 px-1 pb-4">
-        <input
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Comentar…"
-          className="flex-1 rounded-xl border border-line-strong bg-card px-4 py-2.5 text-base text-snow placeholder-ash outline-none focus:border-rose"
-        />
-        <button
-          type="submit"
-          disabled={!body.trim() || addComment.isPending}
-          className="rounded-xl bg-rose px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"
-        >
-          Enviar
-        </button>
-      </form>
       </div>
       {confirmDelete && (
         <ConfirmDialog

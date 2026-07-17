@@ -17,9 +17,9 @@ import {
 // um PNG transparente — e engolia falhas de rede do poster silenciosamente.
 
 type Seg = { text: string; color: string }
-type Poster = { src: CanvasImageSource; w: number; h: number }
+type LoadedImage = { src: CanvasImageSource; w: number; h: number }
 
-async function loadPoster(url: string): Promise<Poster> {
+async function loadImage(url: string): Promise<LoadedImage> {
   const attempt = async () => {
     const res = await fetch(url, { mode: 'cors', cache: 'no-store' })
     if (!res.ok) throw new Error(`poster HTTP ${res.status}`)
@@ -131,14 +131,18 @@ function drawStars(ctx: CanvasRenderingContext2D, rating: number, centerX: numbe
 
 export async function renderShareCard(
   post: Post,
-  members: Profile[],
-  opts: { isPremium?: boolean; theme?: CardTheme } = {},
+  author: Profile | undefined,
+  avatarUrl: string | null,
+  authorIndex = 0,
+  opts: { isPremium?: boolean; theme?: CardTheme; memberCount?: number } = {},
 ): Promise<Blob> {
-  const { isPremium = false, theme = DEFAULT_THEME } = opts
+  const { isPremium = false, theme = DEFAULT_THEME, memberCount = 2 } = opts
   // mesma query própria de antes: não reusa a entrada de cache sem CORS
   // criada pelos <img> do feed
   const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
-  const poster = baseUrl ? await loadPoster(`${baseUrl}?share=1`) : null
+  const poster = baseUrl ? await loadImage(`${baseUrl}?share=1`) : null
+  // avatar é secundário: falha degrada para o círculo com inicial, não bloqueia
+  const avatar = avatarUrl ? await loadImage(avatarUrl).catch(() => null) : null
 
   const canvas = document.createElement('canvas')
   canvas.width = CARD.width
@@ -155,18 +159,14 @@ export async function renderShareCard(
   const serif = (px: number) => `${px}px ${CARD.serifStack}`
   const sans = (px: number, weight = 400) => `${weight} ${px}px ${CARD.fontStack}`
 
-  const names = members.map((m) => m.displayName).join(' ♥ ')
+  const authorName = author?.displayName ?? t.appName
   const snippet =
     post.body && post.body.length > 140 ? `${post.body.slice(0, 140)}…` : post.body
 
   // mede tudo antes pra centralizar verticalmente (como o flex center do DOM)
-  ctx.font = serif(CARD.header.size)
-  const headerLines = wrapSegments(
-    ctx,
-    [{ text: `${t.appName} · ${names}`, color: CARD.header.color }],
-    maxW,
-  )
-  const headerLH = CARD.header.size * 1.2
+  ctx.font = sans(CARD.author.nameSize, 500)
+  const authorRowW =
+    CARD.author.avatarSize + CARD.author.gap + ctx.measureText(authorName).width
 
   ctx.font = sans(CARD.title.size, CARD.title.weight)
   const titleSegs: Seg[] = [{ text: post.movie?.title ?? '', color: CARD.title.color }]
@@ -186,8 +186,8 @@ export async function renderShareCard(
 
   const hasStars = post.rating !== null
   const total =
-    headerLines.length * headerLH +
-    CARD.header.marginBottom +
+    CARD.author.avatarSize +
+    CARD.author.marginBottom +
     CARD.poster.height +
     CARD.title.marginTop +
     titleLines.length * titleLH +
@@ -196,12 +196,33 @@ export async function renderShareCard(
     footerLH
   let y = Math.max((CARD.height - total) / 2, CARD.padding)
 
-  ctx.font = serif(CARD.header.size)
-  for (const line of headerLines) {
-    drawSegLine(ctx, line, centerX, y + headerLH / 2)
-    y += headerLH
+  // cabeçalho: avatar circular + nome do autor, centrados como uma linha só
+  const av = CARD.author.avatarSize
+  const avX = centerX - authorRowW / 2
+  ctx.save()
+  ctx.beginPath()
+  ctx.arc(avX + av / 2, y + av / 2, av / 2, 0, Math.PI * 2)
+  ctx.clip()
+  if (avatar) {
+    const scale = Math.max(av / avatar.w, av / avatar.h)
+    const sw = av / scale
+    const sh = av / scale
+    ctx.drawImage(avatar.src, (avatar.w - sw) / 2, (avatar.h - sh) / 2, sw, sh, avX, y, av, av)
+  } else {
+    ctx.fillStyle =
+      CARD.author.fallbackColors[authorIndex % CARD.author.fallbackColors.length]
+    ctx.fillRect(avX, y, av, av)
+    ctx.fillStyle = CARD.author.fallbackText
+    ctx.font = sans(av * 0.42, 500)
+    ctx.textAlign = 'center'
+    ctx.fillText(authorName.slice(0, 1).toUpperCase(), avX + av / 2, y + av / 2)
   }
-  y += CARD.header.marginBottom
+  ctx.restore()
+  ctx.font = sans(CARD.author.nameSize, 500)
+  ctx.textAlign = 'left'
+  ctx.fillStyle = CARD.author.nameColor
+  ctx.fillText(authorName, avX + av + CARD.author.gap, y + av / 2)
+  y += av + CARD.author.marginBottom
 
   const posterX = centerX - CARD.poster.width / 2
   ctx.save()
@@ -266,7 +287,7 @@ export async function renderShareCard(
   ctx.font = sans(CARD.footer.size)
   drawSegLine(
     ctx,
-    [{ text: cardFooter(t.share.reviewedBy(members.length), isPremium), color: CARD.footer.color }],
+    [{ text: cardFooter(t.share.reviewedBy(memberCount), isPremium), color: CARD.footer.color }],
     centerX,
     y + footerLH / 2,
   )

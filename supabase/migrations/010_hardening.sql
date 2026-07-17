@@ -1,4 +1,4 @@
--- v9: hardening de segurança (pré-requisito para cobrar)
+-- v10: hardening de segurança (pré-requisito para cobrar)
 -- O client fala direto com o Postgres, então todo gating de plano depende de
 -- RLS íntegra. Quatro frentes:
 --   1. WITH CHECK explícito nos UPDATEs que não tinham;

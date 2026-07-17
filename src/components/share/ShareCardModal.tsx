@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Post } from '../../domain/types'
 import { useCouple } from '../../hooks/useCouple'
 import { useEntitlement } from '../../hooks/useEntitlements'
+import { usePhotoUrl } from '../../hooks/useFeed'
 import { renderShareCard } from '../../lib/renderShareCard'
 import { CARD_THEMES, DEFAULT_THEME, type CardTheme } from '../../lib/shareCardLayout'
 import { ShareCard } from './ShareCard'
@@ -15,12 +16,23 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
   const [error, setError] = useState<string | null>(null)
 
   const isPremium = ent?.isPremium === true
+  const members = coupleData?.members ?? []
+  const authorIndex = Math.max(
+    members.findIndex((m) => m.id === post.authorId),
+    0,
+  )
+  const author = members.find((m) => m.id === post.authorId)
+  const { data: avatarUrl } = usePhotoUrl(author?.avatarUrl ?? null)
 
   async function handleShare() {
     setBusy(true)
     setError(null)
     try {
-      const blob = await renderShareCard(post, coupleData?.members ?? [], { isPremium, theme })
+      const blob = await renderShareCard(post, author, avatarUrl ?? null, authorIndex, {
+        isPremium,
+        theme,
+        memberCount: members.length,
+      })
       const file = new File([blob], 'mozii-review.png', { type: 'image/png' })
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file] })
@@ -55,7 +67,10 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
           >
             <ShareCard
               post={post}
-              members={coupleData?.members ?? []}
+              author={author}
+              avatarUrl={avatarUrl ?? null}
+              authorIndex={authorIndex}
+              memberCount={members.length}
               isPremium={isPremium}
               theme={theme}
             />

@@ -1,4 +1,4 @@
--- v11: GRANTs explícitos da Data API (compat com o default novo do Supabase)
+-- v12: GRANTs explícitos da Data API (compat com o default novo do Supabase)
 -- As migrations antigas dependiam de grants IMPLÍCITOS ao role `authenticated`
 -- (comportamento legado, ainda ativo na produção atual). Projetos criados hoje
 -- podem revogar privilégios em entidades novas do schema public — estes GRANTs

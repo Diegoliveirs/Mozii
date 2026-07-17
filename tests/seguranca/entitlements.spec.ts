@@ -3,7 +3,7 @@ import { api, admin, hasAdmin, signInOrUp, expireTrial, seedSubscription } from 
 import { resetTestUser } from '../helpers/reset'
 
 /**
- * Prova que o entitlement por ESPAÇO (010_subscriptions.sql) não é contornável
+ * Prova que o entitlement por ESPAÇO (011_subscriptions.sql) não é contornável
  * pela Data API: quota de listas free, limite de membros 2/8, escrita em
  * subscriptions bloqueada, isolamento entre espaços e trava do pagante.
  * Usuários próprios (não os 2 fixos do fluxo-casal) — workers: 1.

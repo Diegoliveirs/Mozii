@@ -11,7 +11,7 @@ async function currentUserId(): Promise<string> {
 }
 
 export async function upsertMovieCache(movie: MovieRef): Promise<void> {
-  // escrita direta em movies foi revogada (009_hardening) — upsert via RPC validada
+  // escrita direta em movies foi revogada (010_hardening) — upsert via RPC validada
   const { error } = await supabase.rpc('upsert_movie', {
     p_tmdb_id: movie.tmdbId,
     p_title: movie.title,

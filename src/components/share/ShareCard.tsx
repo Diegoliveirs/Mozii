@@ -8,18 +8,24 @@ import { StarRating } from '../movies/StarRating'
 // renderShareCard.ts a partir das MESMAS constantes de shareCardLayout.ts.
 export function ShareCard({
   post,
-  members,
+  author,
+  avatarUrl,
+  authorIndex = 0,
+  memberCount = 2,
   isPremium = false,
   theme = DEFAULT_THEME,
 }: {
   post: Post
-  members: Profile[]
+  author: Profile | undefined
+  avatarUrl: string | null
+  authorIndex?: number
+  memberCount?: number
   isPremium?: boolean
   theme?: CardTheme
 }) {
   const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
   const url = baseUrl ? `${baseUrl}?share=1` : null
-  const names = members.map((m) => m.displayName).join(' ♥ ')
+  const authorName = author?.displayName ?? t.appName
   const snippet = post.body && post.body.length > 140 ? `${post.body.slice(0, 140)}…` : post.body
 
   return (
@@ -38,16 +44,48 @@ export function ShareCard({
         fontFamily: CARD.fontStack,
       }}
     >
-      <p
+      <div
         style={{
-          fontFamily: CARD.serifStack,
-          fontSize: CARD.header.size,
-          color: CARD.header.color,
-          margin: `0 0 ${CARD.header.marginBottom}px`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: CARD.author.gap,
+          marginBottom: CARD.author.marginBottom,
         }}
       >
-        {t.appName} · {names}
-      </p>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            style={{
+              width: CARD.author.avatarSize,
+              height: CARD.author.avatarSize,
+              borderRadius: '50%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <span
+            style={{
+              width: CARD.author.avatarSize,
+              height: CARD.author.avatarSize,
+              borderRadius: '50%',
+              background:
+                CARD.author.fallbackColors[authorIndex % CARD.author.fallbackColors.length],
+              color: CARD.author.fallbackText,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: CARD.author.avatarSize * 0.42,
+              fontWeight: 500,
+            }}
+          >
+            {authorName.slice(0, 1).toUpperCase()}
+          </span>
+        )}
+        <span style={{ fontSize: CARD.author.nameSize, fontWeight: 500, color: CARD.author.nameColor }}>
+          {authorName}
+        </span>
+      </div>
       {url ? (
         <img
           src={url}
@@ -115,7 +153,7 @@ export function ShareCard({
         </p>
       )}
       <p style={{ fontSize: CARD.footer.size, color: CARD.footer.color, margin: 0 }}>
-        {cardFooter(t.share.reviewedBy(members.length), isPremium)}
+        {cardFooter(t.share.reviewedBy(memberCount), isPremium)}
       </p>
     </div>
   )

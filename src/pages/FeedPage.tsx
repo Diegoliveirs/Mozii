@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Post } from '../domain/types'
 import { useFeedInfinite } from '../hooks/useFeed'
 import { useCouple } from '../hooks/useCouple'
-import { useReactions } from '../hooks/useComments'
+import { useCommentCounts, useReactions } from '../hooks/useComments'
 import { FeedItemCard } from '../components/feed/FeedItemCard'
 import { ShareCardModal } from '../components/share/ShareCardModal'
 import { t } from '../lib/i18n'
@@ -15,11 +15,12 @@ export function FeedPage() {
   const posts = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data])
   const postIds = useMemo(() => posts.map((p) => p.id), [posts])
   const { data: reactions } = useReactions(postIds)
+  const { data: commentCounts } = useCommentCounts(postIds)
 
   const members = coupleData?.members ?? []
 
   return (
-    <div className="px-3 pt-4">
+    <div className="px-3 pt-[calc(1rem+env(safe-area-inset-top))]">
       <div className="mb-4 flex items-center justify-between px-1">
         <span className="font-voice text-2xl text-snow">{t.appName}</span>
         {members.length === 2 && (
@@ -42,6 +43,7 @@ export function FeedPage() {
             members={members}
             reactions={reactions?.[post.id] ?? []}
             onShare={setSharePost}
+            commentCount={commentCounts?.[post.id] ?? 0}
           />
         ))}
       </div>

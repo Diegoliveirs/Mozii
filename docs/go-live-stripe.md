@@ -16,10 +16,10 @@
 
 1. 🤖 `supabase link --project-ref vgdhkpvkywidmqclapaq` (produção) — conferir
    duas vezes o ref antes de qualquer comando.
-2. 🤖 `supabase db push --dry-run` — deve listar SOMENTE 009/010/011.
+2. 🤖 `supabase db push --dry-run` — deve listar SOMENTE 010/011/012.
    ⚠️ Se quiser reaplicar 001–008, algo está errado — parar e reconciliar com
    `supabase migration repair`.
-3. 🤖 `supabase db push` (aplica 009_hardening, 010_subscriptions, 011_grants).
+3. 🤖 `supabase db push` (aplica 010_hardening, 011_subscriptions, 012_grants).
    O backfill dá `trial_ends_at = now() + 7 dias` aos espaços existentes —
    todos ganham 1 semana de premium na virada (intencional: goodwill de launch).
 

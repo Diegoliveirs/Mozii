@@ -141,7 +141,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))]">
       <h1 className="mb-6 text-lg font-medium text-snow">{t.nav.profile}</h1>
 
       <div className="mb-4 flex flex-col items-center">

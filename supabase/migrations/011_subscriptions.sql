@@ -1,4 +1,4 @@
--- v10: assinaturas + entitlements por ESPAÇO
+-- v11: assinaturas + entitlements por ESPAÇO
 -- Modelo: freemium. Núcleo de casal grátis; premium (por espaço) desbloqueia
 -- grupos (3–8 membros), listas ilimitadas e perks. Cobrança por espaço =
 -- "um paga, todos usam": a linha de subscriptions é 1:1 com couples e
@@ -108,7 +108,7 @@ create policy "lists: excluir" on lists
 
 -- ---------------------------------------------------------------------------
 -- 5) Gate de GRUPO no join_couple: free = 2 membros; premium = até 8.
---    Preserva o rate-limit de invite code de 009_hardening.sql.
+--    Preserva o rate-limit de invite code de 010_hardening.sql.
 create or replace function join_couple(code text) returns couples
 language plpgsql security definer set search_path = public as $$
 declare
