@@ -31,10 +31,17 @@ test('comentário inline no card do feed', async ({ page }) => {
   await expect(page).toHaveURL(/\/$/)
 
   await page.getByPlaceholder('Comentar…').fill('Comentário inline de teste.')
+  // espera o POST do comentário assentar antes de seguir: contra a latência do
+  // staging na nuvem o reload chega antes da escrita persistir (o otimismo some)
+  const commentPosted = page.waitForResponse(
+    (r) => r.url().includes('/rest/v1/comments') && r.request().method() === 'POST' && r.ok(),
+    { timeout: 15_000 },
+  )
   await page.getByRole('button', { name: 'Enviar' }).click()
 
   // otimismo: aparece imediatamente no card
   await expect(page.getByText('Comentário inline de teste.')).toBeVisible({ timeout: 5_000 })
+  await commentPosted
 
   // persistência + badge de contagem após reload
   await page.reload()
