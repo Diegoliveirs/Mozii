@@ -1,3 +1,17 @@
+import type { Entitlement } from '../domain/types'
+
+/** Tem plano PAGO vigente (vitalício ou assinatura ativa no Stripe)? */
+export function hasPaidPlan(ent: Entitlement | undefined): boolean {
+  if (!ent) return false
+  return ent.isLifetime || ent.status === 'active' || ent.status === 'trialing'
+}
+
+/** Premium só pelo trial do app (7 dias do espaço novo), sem plano pago. */
+export function isAppTrial(ent: Entitlement | undefined): boolean {
+  if (!ent) return false
+  return ent.isPremium && !hasPaidPlan(ent)
+}
+
 /** Dias restantes (arredondados p/ cima) até uma data ISO; 0 se nula/passada. */
 export function daysLeft(iso: string | null): number {
   if (!iso) return 0

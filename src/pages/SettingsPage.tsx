@@ -10,18 +10,28 @@ import {
   useUpdateDisplayName,
 } from '../hooks/useProfile'
 import { useLists } from '../hooks/useLists'
+import { useEntitlement } from '../hooks/useEntitlements'
 import { ProfileAvatar } from '../components/feed/ProfileAvatar'
+import { PremiumBadge } from '../components/premium/PremiumBadge'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
+import { Link } from 'react-router-dom'
 import { t } from '../lib/i18n'
 
 function StatsSection() {
   const { data: lists } = useLists()
   const { data: stats } = useReviewStats()
   const { data: coupleData } = useCouple()
+  const { data: ent } = useEntitlement()
   const members = coupleData?.members ?? []
 
   const watched = lists?.reduce((sum, l) => sum + l.watchedCount, 0) ?? 0
   const wishlisted = lists?.reduce((sum, l) => sum + l.itemCount, 0) ?? 0
+
+  // distribuição de notas (1–5, meia estrela junta com a cheia de baixo)
+  const buckets = [1, 2, 3, 4, 5].map(
+    (star) => stats?.filter((s) => Math.ceil(s.rating) === star).length ?? 0,
+  )
+  const maxBucket = Math.max(1, ...buckets)
 
   return (
     <div className="rounded-2xl bg-card p-4">
@@ -49,6 +59,33 @@ function StatsSection() {
           </div>
         )
       })}
+
+      {/* estatísticas avançadas: premium vê; free ganha o teaser */}
+      {ent?.isPremium ? (
+        <div className="mt-3 border-t border-line pt-3">
+          <p className="mb-2 text-xs text-ash">{t.stats.distribution}</p>
+          <div className="flex items-end gap-1.5" style={{ height: 56 }}>
+            {buckets.map((count, i) => (
+              <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-sm bg-rose/70"
+                  style={{ height: `${Math.max(4, (count / maxBucket) * 44)}px` }}
+                />
+                <span className="text-[10px] text-ash">{i + 1}★</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <Link
+          to="/premium"
+          className="mt-3 flex items-center gap-2 border-t border-line pt-3 text-xs text-ash"
+        >
+          <span aria-hidden="true">🔒</span>
+          <span className="flex-1">{t.stats.locked}</span>
+          <span className="text-rose-soft">›</span>
+        </Link>
+      )}
     </div>
   )
 }
@@ -68,9 +105,12 @@ export function SettingsPage() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDeletion, setConfirmDeletion] = useState(false)
 
-  const myIndex = coupleData?.members.findIndex((m) => m.id === profile?.id) ?? 0
-  const partner = coupleData?.members.find((m) => m.id !== profile?.id)
-  const partnerIndex = myIndex === 0 ? 1 : 0
+  const { data: ent } = useEntitlement()
+  const members = coupleData?.members ?? []
+  const myIndex = members.findIndex((m) => m.id === profile?.id)
+  const others = members
+    .map((member, index) => ({ member, index }))
+    .filter(({ member }) => member.id !== profile?.id)
 
   async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -153,16 +193,20 @@ export function SettingsPage() {
       </div>
 
       <div className="space-y-3">
-        {partner && (
-          <div className="flex items-center gap-3 rounded-2xl bg-card p-4">
-            <ProfileAvatar profile={partner} index={partnerIndex} size="md" />
-            <div>
-              <p className="text-xs text-ash">Seu par</p>
-              <p className="text-sm font-medium text-snow">{partner.displayName}</p>
-            </div>
+        {others.length > 0 && (
+          <div className="rounded-2xl bg-card p-4">
+            <p className="mb-2 text-xs text-ash">
+              {others.length === 1 ? t.group.partner : t.group.title}
+            </p>
+            {others.map(({ member, index }, i) => (
+              <div key={member.id} className={`flex items-center gap-3 py-1.5 ${i > 0 ? 'border-t border-line' : ''}`}>
+                <ProfileAvatar profile={member} index={index} size="md" />
+                <p className="text-sm font-medium text-snow">{member.displayName}</p>
+              </div>
+            ))}
           </div>
         )}
-        {!partner && coupleData && (
+        {others.length === 0 && coupleData && (
           <div className="rounded-2xl bg-card p-4">
             <p className="text-xs text-ash">{t.pairing.yourCode}</p>
             <p className="mt-1 font-mono text-lg tracking-[0.3em] text-snow">
@@ -171,6 +215,28 @@ export function SettingsPage() {
             <p className="mt-1 text-xs text-ash">{t.pairing.waiting}</p>
           </div>
         )}
+
+        {/* grupo: premium com vaga convida mais gente; free vê o gancho */}
+        {others.length > 0 && ent?.isPremium && members.length < 8 && coupleData && (
+          <div className="rounded-2xl bg-card p-4">
+            <p className="text-xs text-ash">{t.group.invite}</p>
+            <p className="mt-1 font-mono text-lg tracking-[0.3em] text-snow">
+              {coupleData.couple.inviteCode}
+            </p>
+            <p className="mt-1 text-xs text-ash">{t.group.inviteHint(members.length)}</p>
+          </div>
+        )}
+        {others.length > 0 && ent && !ent.isPremium && (
+          <Link
+            to="/premium"
+            className="flex items-center justify-between rounded-2xl bg-card p-4 transition-transform active:scale-[0.98]"
+          >
+            <span className="flex-1 text-xs text-ash">{t.group.upsell}</span>
+            <span className="ml-2 text-rose-soft">›</span>
+          </Link>
+        )}
+
+        <PremiumBadge />
 
         <StatsSection />
 

@@ -1,7 +1,15 @@
 import type { Post, Profile } from '../domain/types'
 import { posterUrl } from '../api/tmdb'
 import { t } from './i18n'
-import { CARD, STAR_PATH, STAR_VIEWBOX } from './shareCardLayout'
+import {
+  CARD,
+  CARD_THEMES,
+  DEFAULT_THEME,
+  STAR_PATH,
+  STAR_VIEWBOX,
+  cardFooter,
+  type CardTheme,
+} from './shareCardLayout'
 
 // Gera o PNG 1080x1920 do share card desenhando direto num canvas 2D.
 // Substitui a captura de DOM via html-to-image, que rasterizava o card
@@ -121,7 +129,12 @@ function drawStars(ctx: CanvasRenderingContext2D, rating: number, centerX: numbe
   }
 }
 
-export async function renderShareCard(post: Post, members: Profile[]): Promise<Blob> {
+export async function renderShareCard(
+  post: Post,
+  members: Profile[],
+  opts: { isPremium?: boolean; theme?: CardTheme } = {},
+): Promise<Blob> {
+  const { isPremium = false, theme = DEFAULT_THEME } = opts
   // mesma query própria de antes: não reusa a entrada de cache sem CORS
   // criada pelos <img> do feed
   const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
@@ -133,7 +146,7 @@ export async function renderShareCard(post: Post, members: Profile[]): Promise<B
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2D indisponível')
 
-  ctx.fillStyle = CARD.background
+  ctx.fillStyle = CARD_THEMES[theme].background
   ctx.fillRect(0, 0, CARD.width, CARD.height)
   ctx.textBaseline = 'middle'
 
@@ -253,7 +266,7 @@ export async function renderShareCard(post: Post, members: Profile[]): Promise<B
   ctx.font = sans(CARD.footer.size)
   drawSegLine(
     ctx,
-    [{ text: `${t.share.reviewedTogether} · mozii`, color: CARD.footer.color }],
+    [{ text: cardFooter(t.share.reviewedBy(members.length), isPremium), color: CARD.footer.color }],
     centerX,
     y + footerLH / 2,
   )
