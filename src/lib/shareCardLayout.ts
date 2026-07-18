@@ -35,3 +35,18 @@ export const CARD = {
 // mesmo path do StarRating.tsx (viewBox 24)
 export const STAR_PATH = 'M12 17.3l-6.2 3.4 1.2-6.9-5-4.9 6.9-1L12 1.6l3.1 6.3 6.9 1-5 4.9 1.2 6.9z'
 export const STAR_VIEWBOX = 24
+
+// Temas de cor do card (fundo) — seleção é perk premium; 'midnight' é o default
+// de todo mundo. Todos escuros: o teste de regressão valida cantos escuros.
+export type CardTheme = keyof typeof CARD_THEMES
+export const CARD_THEMES = {
+  midnight: { label: 'Meia-noite', background: '#0e0b12' },
+  wine: { label: 'Vinho', background: '#1c0d14' },
+  ocean: { label: 'Oceano', background: '#0a1220' },
+} as const
+export const DEFAULT_THEME: CardTheme = 'midnight'
+
+/** Rodapé do card: free carrega a marca "mozii"; premium assina limpo. */
+export function cardFooter(reviewedBy: string, isPremium: boolean): string {
+  return isPremium ? reviewedBy : `${reviewedBy} · mozii`
+}

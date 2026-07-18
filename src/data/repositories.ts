@@ -2,10 +2,12 @@ import type {
   AuthUser,
   Comment,
   Couple,
+  Entitlement,
   ListItem,
   MovieList,
   MovieRef,
   Post,
+  PremiumPlan,
   Profile,
   Reaction,
   Unsubscribe,
@@ -70,10 +72,23 @@ export interface StorageRepository {
   getPhotoUrl(path: string): Promise<string>
 }
 
+export interface BillingRepository {
+  getEntitlement(): Promise<Entitlement>
+  /** Sessão de Embedded Checkout — o client monta o form num modal. */
+  createCheckoutSession(plan: PremiumPlan): Promise<{ clientSecret: string }>
+  /** Cancela no fim do período já pago (cancel_at_period_end). */
+  cancelSubscription(): Promise<void>
+  /** Desfaz o cancelamento antes do fim do período. */
+  resumeSubscription(): Promise<void>
+  /** Customer Portal — só para trocar forma de pagamento. */
+  openPortal(): Promise<{ url: string }>
+}
+
 export interface Repositories {
   auth: AuthRepository
   couple: CoupleRepository
   lists: ListRepository
   feed: FeedRepository
   storage: StorageRepository
+  billing: BillingRepository
 }

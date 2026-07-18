@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import type { Post } from '../../domain/types'
 import { useCouple } from '../../hooks/useCouple'
+import { useEntitlement } from '../../hooks/useEntitlements'
 import { usePhotoUrl } from '../../hooks/useFeed'
 import { renderShareCard } from '../../lib/renderShareCard'
+import { CARD_THEMES, DEFAULT_THEME, type CardTheme } from '../../lib/shareCardLayout'
 import { ShareCard } from './ShareCard'
 import { t } from '../../lib/i18n'
 
 export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => void }) {
   const { data: coupleData } = useCouple()
+  const { data: ent } = useEntitlement()
   const [busy, setBusy] = useState(false)
+  const [theme, setTheme] = useState<CardTheme>(DEFAULT_THEME)
   const [error, setError] = useState<string | null>(null)
 
+  const isPremium = ent?.isPremium === true
   const members = coupleData?.members ?? []
   const authorIndex = Math.max(
     members.findIndex((m) => m.id === post.authorId),
@@ -23,7 +28,11 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
     setBusy(true)
     setError(null)
     try {
-      const blob = await renderShareCard(post, author, avatarUrl ?? null, authorIndex)
+      const blob = await renderShareCard(post, author, avatarUrl ?? null, authorIndex, {
+        isPremium,
+        theme,
+        memberCount: members.length,
+      })
       const file = new File([blob], 'mozii-review.png', { type: 'image/png' })
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file] })
@@ -56,9 +65,33 @@ export function ShareCardModal({ post, onClose }: { post: Post; onClose: () => v
               transformOrigin: 'top left',
             }}
           >
-            <ShareCard post={post} author={author} avatarUrl={avatarUrl ?? null} authorIndex={authorIndex} />
+            <ShareCard
+              post={post}
+              author={author}
+              avatarUrl={avatarUrl ?? null}
+              authorIndex={authorIndex}
+              memberCount={members.length}
+              isPremium={isPremium}
+              theme={theme}
+            />
           </div>
         </div>
+
+        {/* temas de cor: perk premium */}
+        {isPremium && (
+          <div className="mb-3 flex items-center justify-center gap-2">
+            <span className="text-xs text-ash">{t.share.theme}</span>
+            {(Object.keys(CARD_THEMES) as CardTheme[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => setTheme(key)}
+                aria-label={CARD_THEMES[key].label}
+                className={`h-6 w-6 rounded-full border-2 ${theme === key ? 'border-rose' : 'border-line-strong'}`}
+                style={{ background: CARD_THEMES[key].background }}
+              />
+            ))}
+          </div>
+        )}
 
         {error && <p className="mb-2 text-sm text-rose-soft">{error}</p>}
         <button

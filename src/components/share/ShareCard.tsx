@@ -1,7 +1,7 @@
 import type { Post, Profile } from '../../domain/types'
 import { posterUrl } from '../../api/tmdb'
 import { t } from '../../lib/i18n'
-import { CARD } from '../../lib/shareCardLayout'
+import { CARD, CARD_THEMES, DEFAULT_THEME, cardFooter, type CardTheme } from '../../lib/shareCardLayout'
 import { StarRating } from '../movies/StarRating'
 
 // Preview visual do share card. O PNG exportado é desenhado em canvas por
@@ -11,11 +11,17 @@ export function ShareCard({
   author,
   avatarUrl,
   authorIndex = 0,
+  memberCount = 2,
+  isPremium = false,
+  theme = DEFAULT_THEME,
 }: {
   post: Post
   author: Profile | undefined
   avatarUrl: string | null
   authorIndex?: number
+  memberCount?: number
+  isPremium?: boolean
+  theme?: CardTheme
 }) {
   const baseUrl = post.movie ? posterUrl(post.movie.posterPath, 'w500') : null
   const url = baseUrl ? `${baseUrl}?share=1` : null
@@ -27,7 +33,7 @@ export function ShareCard({
       style={{
         width: CARD.width,
         height: CARD.height,
-        background: CARD.background,
+        background: CARD_THEMES[theme].background,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -147,7 +153,7 @@ export function ShareCard({
         </p>
       )}
       <p style={{ fontSize: CARD.footer.size, color: CARD.footer.color, margin: 0 }}>
-        {t.share.reviewedTogether} · mozii
+        {cardFooter(t.share.reviewedBy(memberCount), isPremium)}
       </p>
     </div>
   )

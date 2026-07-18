@@ -15,6 +15,7 @@ import { SearchPage } from './pages/SearchPage'
 import { MoviePage } from './pages/MoviePage'
 import { ListsPage } from './pages/ListsPage'
 import { ListDetailPage } from './pages/ListDetailPage'
+import { UpgradePage } from './pages/UpgradePage'
 import { t } from './lib/i18n'
 
 function Loading() {
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="/listas" element={<ListsPage />} />
             <Route path="/listas/:listId" element={<ListDetailPage />} />
             <Route path="/perfil" element={<SettingsPage />} />
+            <Route path="/premium" element={<UpgradePage />} />
           </Route>
         </Route>
       </Route>

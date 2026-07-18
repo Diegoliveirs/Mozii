@@ -4,6 +4,7 @@ import { SupabaseCoupleRepository } from './SupabaseCoupleRepository'
 import { SupabaseListRepository } from './SupabaseListRepository'
 import { SupabaseFeedRepository } from './SupabaseFeedRepository'
 import { SupabaseStorageRepository } from './SupabaseStorageRepository'
+import { SupabaseBillingRepository } from './SupabaseBillingRepository'
 
 export function createSupabaseRepositories(): Repositories {
   return {
@@ -12,5 +13,6 @@ export function createSupabaseRepositories(): Repositories {
     lists: new SupabaseListRepository(),
     feed: new SupabaseFeedRepository(),
     storage: new SupabaseStorageRepository(),
+    billing: new SupabaseBillingRepository(),
   }
 }

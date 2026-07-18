@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import type { MovieRef } from '../../domain/types'
 import { useAddToList, useCreateList, useLists } from '../../hooks/useLists'
+import { useEntitlement } from '../../hooks/useEntitlements'
+import { Paywall } from '../premium/Paywall'
 import { t } from '../../lib/i18n'
+
+const FREE_LIST_LIMIT = 3
 
 export function AddToListSheet({ movie, onClose }: { movie: MovieRef; onClose: () => void }) {
   const { data: lists } = useLists()
+  const { data: ent } = useEntitlement()
   const addToList = useAddToList()
   const createList = useCreateList()
   const [newName, setNewName] = useState('')
+  const [paywall, setPaywall] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleAdd(listId: string, listName: string) {
@@ -23,9 +29,18 @@ export function AddToListSheet({ movie, onClose }: { movie: MovieRef; onClose: (
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    const list = await createList.mutateAsync(newName.trim())
-    setNewName('')
-    await handleAdd(list.id, list.name)
+    if (!ent?.isPremium && (lists?.length ?? 0) >= FREE_LIST_LIMIT) {
+      setPaywall(true)
+      return
+    }
+    try {
+      const list = await createList.mutateAsync(newName.trim())
+      setNewName('')
+      await handleAdd(list.id, list.name)
+    } catch {
+      // banco recusou (quota free via RLS) — paywall em vez do erro cru
+      setPaywall(true)
+    }
   }
 
   return (
@@ -70,6 +85,15 @@ export function AddToListSheet({ movie, onClose }: { movie: MovieRef; onClose: (
           </button>
         </form>
       </div>
+      {paywall && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Paywall
+            title={t.premium.paywall.listsTitle}
+            body={t.premium.paywall.listsBody}
+            onClose={() => setPaywall(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }

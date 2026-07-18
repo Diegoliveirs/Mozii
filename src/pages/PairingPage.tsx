@@ -21,7 +21,10 @@ export function PairingPage() {
       navigate('/')
     } catch (err) {
       const msg = err instanceof Error ? err.message : ''
-      setError(msg.includes('completo') ? t.pairing.full : t.pairing.invalid)
+      if (msg.includes('completo')) setError(t.pairing.full)
+      else if (msg.includes('limite')) setError(t.pairing.groupFull)
+      else if (msg.includes('tentativas')) setError(t.pairing.tooMany)
+      else setError(t.pairing.invalid)
     }
   }
 

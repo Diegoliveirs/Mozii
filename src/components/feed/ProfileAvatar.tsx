@@ -1,7 +1,17 @@
 import type { Profile } from '../../domain/types'
 import { usePhotoUrl } from '../../hooks/useFeed'
 
-const COLORS = ['bg-rose', 'bg-[#534ab7]']
+// uma cor por índice de membro — grupos premium chegam a 8 pessoas
+const COLORS = [
+  'bg-rose',
+  'bg-[#534ab7]',
+  'bg-[#2f7d5c]',
+  'bg-[#b7791f]',
+  'bg-[#3d6fb4]',
+  'bg-[#a24a68]',
+  'bg-[#5f7d2f]',
+  'bg-[#7d4ab7]',
+]
 const SIZES = { sm: 'h-6 w-6 text-[10px]', md: 'h-8 w-8 text-xs', lg: 'h-20 w-20 text-2xl' } as const
 
 export function ProfileAvatar({

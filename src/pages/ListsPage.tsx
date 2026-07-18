@@ -1,20 +1,39 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCreateList, useLists } from '../hooks/useLists'
+import { useEntitlement } from '../hooks/useEntitlements'
+import { Paywall } from '../components/premium/Paywall'
 import { posterUrl } from '../api/tmdb'
 import { t } from '../lib/i18n'
 
+const FREE_LIST_LIMIT = 3
+
 export function ListsPage() {
   const { data: lists, isLoading } = useLists()
+  const { data: ent } = useEntitlement()
   const createList = useCreateList()
   const [creating, setCreating] = useState(false)
+  const [paywall, setPaywall] = useState(false)
   const [name, setName] = useState('')
+
+  const atFreeLimit = !ent?.isPremium && (lists?.length ?? 0) >= FREE_LIST_LIMIT
+
+  function handleNewList() {
+    if (atFreeLimit) setPaywall(true)
+    else setCreating(true)
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    await createList.mutateAsync(name.trim())
-    setName('')
-    setCreating(false)
+    try {
+      await createList.mutateAsync(name.trim())
+      setName('')
+      setCreating(false)
+    } catch {
+      // o banco recusa a 4ª lista free (RLS) — mostra o paywall, não o erro cru
+      setCreating(false)
+      setPaywall(true)
+    }
   }
 
   return (
@@ -22,7 +41,7 @@ export function ListsPage() {
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-lg font-medium text-snow">Nossas listas</h1>
         <button
-          onClick={() => setCreating(true)}
+          onClick={handleNewList}
           aria-label={t.movies.newList}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-rose text-white"
         >
@@ -81,6 +100,14 @@ export function ListsPage() {
 
       {lists?.length === 0 && !creating && (
         <p className="pt-12 text-center text-sm text-ash">{t.movies.emptyList}</p>
+      )}
+
+      {paywall && (
+        <Paywall
+          title={t.premium.paywall.listsTitle}
+          body={t.premium.paywall.listsBody}
+          onClose={() => setPaywall(false)}
+        />
       )}
     </div>
   )

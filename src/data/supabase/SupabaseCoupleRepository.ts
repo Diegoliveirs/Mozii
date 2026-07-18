@@ -22,6 +22,11 @@ export class SupabaseCoupleRepository implements CoupleRepository {
   async joinCouple(inviteCode: string): Promise<Couple> {
     const { data, error } = await supabase.rpc('join_couple', { code: inviteCode })
     if (error) throw error
+    // código inválido não gera exception (para o rate-limit do banco persistir a
+    // tentativa — ver 010_hardening.sql). Conforme a versão do PostgREST isso
+    // volta como null OU como um composite de campos nulos ({id:null,...}), então
+    // detectamos pela ausência de id em vez de !data.
+    if (!data?.id) throw new Error('Código inválido')
     return mapCouple(data)
   }
 
