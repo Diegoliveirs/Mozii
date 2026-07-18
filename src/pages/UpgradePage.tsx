@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import type { PremiumPlan } from '../domain/types'
 import { useCreateCheckout, useEntitlement } from '../hooks/useEntitlements'
 import { CheckoutModal } from '../components/premium/CheckoutModal'
-import { daysLeft, hasPaidPlan, isAppTrial } from '../lib/premium'
+import { daysLeft, formatPrice, hasPaidPlan, isAppTrial } from '../lib/premium'
 import { t } from '../lib/i18n'
 
-const PLANS: { plan: PremiumPlan; hint: string }[] = [
-  { plan: 'monthly', hint: t.premium.monthlyHint },
-  { plan: 'weekly', hint: t.premium.weeklyHint },
-  { plan: 'lifetime', hint: t.premium.lifetimeHint },
+// `amount` (centavos) é rótulo estático exibido nos cards. A cobrança real usa
+// os price IDs do Stripe (server-side, no stripe-checkout) — se mudar preço lá,
+// atualizar aqui para não divergir.
+const PLANS: { plan: PremiumPlan; hint: string; amount: number; period: string }[] = [
+  { plan: 'monthly', hint: t.premium.monthlyHint, amount: 1490, period: t.premium.perMonth },
+  { plan: 'weekly', hint: t.premium.weeklyHint, amount: 490, period: t.premium.perWeek },
+  { plan: 'lifetime', hint: t.premium.lifetimeHint, amount: 4990, period: t.premium.oneTime },
 ]
 
 const CONFIRM_TIMEOUT_MS = 90_000
@@ -94,19 +97,21 @@ export function UpgradePage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {PLANS.map(({ plan, hint }) => (
+          {PLANS.map(({ plan, hint, amount, period }) => (
             <button
               key={plan}
               onClick={() => subscribe(plan)}
               disabled={checkout.isPending}
-              className="flex w-full items-center justify-between rounded-2xl bg-card p-4 text-left transition-transform active:scale-[0.98] disabled:opacity-60"
+              aria-label={`${t.premium.plans[plan]} por ${formatPrice(amount, 'brl')} ${period}`}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl bg-card p-4 text-left transition-transform active:scale-[0.98] disabled:opacity-60"
             >
-              <span>
+              <span className="min-w-0">
                 <span className="block text-base font-medium text-snow">{t.premium.plans[plan]}</span>
                 <span className="block text-xs text-ash">{hint}</span>
               </span>
-              <span className="rounded-xl bg-rose px-4 py-2 text-sm font-medium text-white">
-                {plan === 'lifetime' ? t.premium.ctaLifetime : t.premium.cta}
+              <span className="shrink-0 text-right">
+                <span className="block text-base font-semibold text-snow">{formatPrice(amount, 'brl')}</span>
+                <span className="block text-xs text-ash">{period}</span>
               </span>
             </button>
           ))}

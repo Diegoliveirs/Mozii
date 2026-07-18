@@ -5,6 +5,7 @@ import { useCouple } from '../hooks/useCouple'
 import { useCommentCounts, useReactions } from '../hooks/useComments'
 import { FeedItemCard } from '../components/feed/FeedItemCard'
 import { ShareCardModal } from '../components/share/ShareCardModal'
+import { TrialBanner } from '../components/premium/TrialBanner'
 import { t } from '../lib/i18n'
 
 export function FeedPage() {
@@ -29,6 +30,8 @@ export function FeedPage() {
           </span>
         )}
       </div>
+
+      <TrialBanner />
 
       {isLoading && <p className="pt-12 text-center text-sm text-ash">{t.common.loading}</p>}
       {!isLoading && posts.length === 0 && (

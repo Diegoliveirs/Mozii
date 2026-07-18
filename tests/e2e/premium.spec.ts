@@ -46,12 +46,14 @@ test('assinar, confirmar sem F5 e cancelar — tudo dentro do app', async ({ pag
   await page.getByRole('button', { name: 'Continuar' }).click()
   await page.waitForURL(/\/$/, { timeout: 10_000 })
 
-  // /premium → assinar o plano mensal → modal embedded (sem redirect)
+  // /premium → o preço tem que estar visível no card ANTES de clicar
   await page.goto('/premium')
-  await page
-    .locator('button', { has: page.getByText('Mensal', { exact: true }) })
-    .first()
-    .click()
+  const monthlyCard = page.locator('button', { has: page.getByText('Mensal', { exact: true }) }).first()
+  await expect(monthlyCard).toContainText('R$', { timeout: 10_000 })
+  await expect(monthlyCard).toContainText('/mês')
+
+  // assinar o plano mensal → modal embedded (sem redirect)
+  await monthlyCard.click()
 
   const frame = page.frameLocator('iframe[src*="stripe.com"], iframe[name^="embedded-checkout"]').first()
   const cardNumber = frame.locator('#cardNumber, input[placeholder*="1234"], input[autocomplete="cc-number"]').first()
