@@ -80,6 +80,17 @@ export interface Post {
   createdAt: string
 }
 
+/** Momento do diário do espaço — foto(s) + legenda + data do acontecido. */
+export interface Moment {
+  id: string
+  coupleId: string
+  authorId: string
+  caption: string | null
+  happenedOn: string // 'YYYY-MM-DD'
+  photoPaths: string[]
+  createdAt: string
+}
+
 export type PremiumPlan = 'weekly' | 'monthly' | 'lifetime'
 
 /** Estado premium do espaço — espelho do get_entitlement() do banco. */

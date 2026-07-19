@@ -215,6 +215,7 @@ export class SupabaseFeedRepository implements FeedRepository {
       { table: 'posts', filter: `couple_id=eq.${coupleId}` },
       { table: 'lists', filter: `couple_id=eq.${coupleId}` },
       { table: 'favorites', filter: `couple_id=eq.${coupleId}` },
+      { table: 'moments', filter: `couple_id=eq.${coupleId}` },
       { table: 'comments' },
       { table: 'reactions' },
       { table: 'list_items' },

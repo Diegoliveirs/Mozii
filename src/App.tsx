@@ -12,9 +12,9 @@ import { AjustesPage } from './pages/AjustesPage'
 import { FeedPage } from './pages/FeedPage'
 import { NewPostPage } from './pages/NewPostPage'
 import { PostDetailPage } from './pages/PostDetailPage'
-import { SearchPage } from './pages/SearchPage'
+import { CinemaPage } from './pages/CinemaPage'
+import { MomentsPage } from './pages/MomentsPage'
 import { MoviePage } from './pages/MoviePage'
-import { ListsPage } from './pages/ListsPage'
 import { ListDetailPage } from './pages/ListDetailPage'
 import { UpgradePage } from './pages/UpgradePage'
 import { t } from './lib/i18n'
@@ -58,12 +58,15 @@ export default function App() {
         <Route element={<RequireCouple />}>
           <Route element={<AppShell />}>
             <Route path="/" element={<FeedPage />} />
+            <Route path="/momentos" element={<MomentsPage />} />
             <Route path="/novo" element={<NewPostPage />} />
             <Route path="/post/:postId" element={<PostDetailPage />} />
-            <Route path="/buscar" element={<SearchPage />} />
+            <Route path="/cinema" element={<CinemaPage />} />
             <Route path="/filme/:tmdbId" element={<MoviePage />} />
-            <Route path="/listas" element={<ListsPage />} />
             <Route path="/listas/:listId" element={<ListDetailPage />} />
+            {/* rotas antigas viram atalho para o hub Cinema (bookmarks/PWA) */}
+            <Route path="/buscar" element={<Navigate to="/cinema" replace />} />
+            <Route path="/listas" element={<Navigate to="/cinema?aba=listas" replace />} />
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/perfil/:memberId" element={<ProfilePage />} />
             <Route path="/ajustes" element={<AjustesPage />} />

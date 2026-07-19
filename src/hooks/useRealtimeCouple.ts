@@ -12,6 +12,7 @@ const INVALIDATE_BY_TABLE: Record<string, string[]> = {
   lists: ['lists', 'lists-containing'],
   list_items: ['list-items', 'lists', 'lists-containing'],
   favorites: ['favorites'],
+  moments: ['moments'],
 }
 
 // Assina os eventos do casal (posts, comentários, reações, listas) uma única

@@ -1,24 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTmdbSearch } from '../hooks/useTmdbSearch'
-import { Poster } from '../components/movies/Poster'
-import { t } from '../lib/i18n'
+import { useTmdbSearch } from '../../hooks/useTmdbSearch'
+import { Poster } from '../movies/Poster'
+import { t } from '../../lib/i18n'
 
-export function SearchPage() {
+export function CinemaSearch() {
   const [query, setQuery] = useState('')
   const { data: results, isLoading, isError } = useTmdbSearch(query)
 
   return (
-    <div className="px-4 pt-4">
-      <div className="sticky top-0 z-10 -mx-4 bg-night px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-3">
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.movies.searchPlaceholder}
-          className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
-        />
-      </div>
+    <div>
+      <input
+        autoFocus
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t.movies.searchPlaceholder}
+        className="w-full rounded-xl border border-line-strong bg-card px-4 py-3 text-base text-snow placeholder-ash outline-none focus:border-rose"
+      />
 
       {isLoading && <p className="pt-8 text-center text-sm text-ash">{t.common.loading}</p>}
       {isError && <p className="pt-8 text-center text-sm text-rose-soft">{t.common.error}</p>}
