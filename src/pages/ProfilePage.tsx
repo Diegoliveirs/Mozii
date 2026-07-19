@@ -156,10 +156,12 @@ export function ProfilePage() {
         {/* histograma de notas */}
         <RatingsHistogram ratings={mine.map((s) => s.rating)} isPremium={!!ent?.isPremium} />
 
-        {/* atividade pessoal */}
+        {/* Minhas Pegadas — timeline de toda a atividade do membro (reviews, posts,
+            memórias, atividades de lista). Ordenada por created_at desc no feed pessoal.
+            A estrutura (posts.type) já permite filtrar por tipo no futuro. */}
         <section>
           <p className="mb-2 text-xs text-ash">
-            {isSelf ? t.profile.yourActivity : t.profile.memberActivity(member?.displayName ?? '')}
+            {isSelf ? t.profile.footprints : t.profile.footprintsMember(member?.displayName ?? '')}
           </p>
           {posts.length === 0 && (
             <p className="py-6 text-center text-sm text-ash">{t.profile.emptyActivity}</p>

@@ -16,7 +16,7 @@ export async function resizePhoto(file: File, maxDimension = 1600): Promise<Blob
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('Falha ao processar imagem'))),
-      'image/jpeg',
+      'image/webp',
       QUALITY,
     )
   })

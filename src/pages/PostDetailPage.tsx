@@ -35,7 +35,7 @@ export function PostDetailPage() {
       <PageHeader
         title="Publicação"
         action={
-          post.authorId === profile?.id ? (
+          post.authorId === profile?.id && post.type !== 'moment' ? (
             <button
               onClick={() => setConfirmDelete(true)}
               aria-label={t.common.delete}

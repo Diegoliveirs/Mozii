@@ -48,14 +48,17 @@ export interface ListItem {
   createdAt: string
 }
 
-export type PostType = 'post' | 'review' | 'activity'
+export type PostType = 'post' | 'review' | 'activity' | 'moment'
 
 export interface ActivityMeta {
-  kind: 'list_add' | 'watched'
+  kind: 'list_add' | 'watched' | 'moment'
   // listId/listName só existem no list_add; watched carrega só o filme
   listId?: string
   listName?: string
-  movieTitle: string
+  movieTitle?: string
+  // moment: aponta para a memória de origem e carrega as fotos p/ render no feed
+  momentId?: string
+  photoPaths?: string[]
 }
 
 /** Filme favorito de um membro (fileira do perfil, estilo Letterboxd). */
