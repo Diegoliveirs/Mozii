@@ -2,6 +2,7 @@ import type {
   ActivityMeta,
   Comment,
   Couple,
+  Favorite,
   ListItem,
   MovieList,
   MovieRef,
@@ -108,13 +109,31 @@ export function mapPost(row: PostRow): Post {
     rating: row.rating === null ? null : Number(row.rating),
     activityMeta: meta
       ? ({
-          kind: meta.kind as 'list_add',
-          listId: meta.list_id as string,
-          listName: meta.list_name as string,
+          kind: meta.kind as 'list_add' | 'watched',
+          listId: (meta.list_id as string | undefined) ?? undefined,
+          listName: (meta.list_name as string | undefined) ?? undefined,
           movieTitle: meta.movie_title as string,
         } satisfies ActivityMeta)
       : null,
     createdAt: row.created_at,
+  }
+}
+
+interface FavoriteRow {
+  id: string
+  profile_id: string
+  couple_id: string
+  position: number
+  movies: Record<string, unknown>
+}
+
+export function mapFavorite(row: FavoriteRow): Favorite {
+  return {
+    id: row.id,
+    profileId: row.profile_id,
+    coupleId: row.couple_id,
+    movie: mapMovie(row.movies),
+    position: row.position,
   }
 }
 

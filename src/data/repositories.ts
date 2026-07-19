@@ -3,6 +3,7 @@ import type {
   Comment,
   Couple,
   Entitlement,
+  Favorite,
   ListItem,
   MovieList,
   MovieRef,
@@ -51,7 +52,8 @@ export interface FeedPage {
 }
 
 export interface FeedRepository {
-  getFeedPage(coupleId: string, cursor?: string, limit?: number): Promise<FeedPage>
+  getFeedPage(coupleId: string, cursor?: string, limit?: number, authorId?: string): Promise<FeedPage>
+  getMemberReviews(coupleId: string, authorId: string, limit?: number): Promise<Post[]>
   createPost(input: { coupleId: string; body: string; photoPath?: string }): Promise<Post>
   createReview(input: { coupleId: string; movie: MovieRef; rating: number; body: string }): Promise<Post>
   getPost(postId: string): Promise<Post>
@@ -65,6 +67,12 @@ export interface FeedRepository {
   toggleReaction(postId: string, emoji: string): Promise<void>
   getReactions(postIds: string[]): Promise<Record<string, Reaction[]>>
   subscribeToCouple?(coupleId: string, onChange: (table: string) => void): Unsubscribe
+}
+
+export interface FavoriteRepository {
+  getFavorites(profileId: string): Promise<Favorite[]>
+  addFavorite(coupleId: string, movie: MovieRef, position: number): Promise<Favorite>
+  removeFavorite(tmdbId: number): Promise<void>
 }
 
 export interface StorageRepository {
@@ -89,6 +97,7 @@ export interface Repositories {
   couple: CoupleRepository
   lists: ListRepository
   feed: FeedRepository
+  favorites: FavoriteRepository
   storage: StorageRepository
   billing: BillingRepository
 }

@@ -6,11 +6,12 @@ import { useMyProfile } from './useCouple'
 // invalidação por prefixo: atinge também keys que espalham ids
 // (ex.: ['reactions', ...postIds])
 const INVALIDATE_BY_TABLE: Record<string, string[]> = {
-  posts: ['feed', 'post', 'movie-reviews', 'review-stats', 'comment-counts'],
+  posts: ['feed', 'member-feed', 'member-reviews', 'post', 'movie-reviews', 'review-stats', 'comment-counts'],
   comments: ['comments', 'comment-counts'],
   reactions: ['reactions'],
   lists: ['lists', 'lists-containing'],
   list_items: ['list-items', 'lists', 'lists-containing'],
+  favorites: ['favorites'],
 }
 
 // Assina os eventos do casal (posts, comentários, reações, listas) uma única
