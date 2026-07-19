@@ -4,6 +4,7 @@ import type {
   Couple,
   Entitlement,
   ListItem,
+  Moment,
   MovieList,
   MovieRef,
   Post,
@@ -67,6 +68,17 @@ export interface FeedRepository {
   subscribeToCouple?(coupleId: string, onChange: (table: string) => void): Unsubscribe
 }
 
+export interface MomentRepository {
+  getMoments(coupleId: string): Promise<Moment[]>
+  createMoment(input: {
+    coupleId: string
+    caption: string | null
+    happenedOn: string
+    photoPaths: string[]
+  }): Promise<Moment>
+  deleteMoment(momentId: string): Promise<void>
+}
+
 export interface StorageRepository {
   uploadPhoto(coupleId: string, file: Blob): Promise<string>
   getPhotoUrl(path: string): Promise<string>
@@ -89,6 +101,7 @@ export interface Repositories {
   couple: CoupleRepository
   lists: ListRepository
   feed: FeedRepository
+  moments: MomentRepository
   storage: StorageRepository
   billing: BillingRepository
 }

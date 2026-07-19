@@ -28,14 +28,14 @@ export function ListDetailPage() {
 
   async function handleDeleteList() {
     await deleteList.mutateAsync(listId)
-    navigate('/listas')
+    navigate('/cinema?aba=listas')
   }
 
   return (
     <div>
       <PageHeader
         title={list?.name ?? '…'}
-        backTo="/listas"
+        backTo="/cinema?aba=listas"
         action={
           <button
             onClick={() => setConfirmDelete(true)}
