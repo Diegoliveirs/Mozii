@@ -51,10 +51,20 @@ export interface ListItem {
 export type PostType = 'post' | 'review' | 'activity'
 
 export interface ActivityMeta {
-  kind: 'list_add'
-  listId: string
-  listName: string
+  kind: 'list_add' | 'watched'
+  // listId/listName só existem no list_add; watched carrega só o filme
+  listId?: string
+  listName?: string
   movieTitle: string
+}
+
+/** Filme favorito de um membro (fileira do perfil, estilo Letterboxd). */
+export interface Favorite {
+  id: string
+  profileId: string
+  coupleId: string
+  movie: MovieRef
+  position: number
 }
 
 export interface Post {

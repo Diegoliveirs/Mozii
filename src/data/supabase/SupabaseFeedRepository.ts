@@ -14,13 +14,19 @@ async function currentUserId(): Promise<string> {
 }
 
 export class SupabaseFeedRepository implements FeedRepository {
-  async getFeedPage(coupleId: string, cursor?: string, limit = 20): Promise<FeedPage> {
+  async getFeedPage(
+    coupleId: string,
+    cursor?: string,
+    limit = 20,
+    authorId?: string,
+  ): Promise<FeedPage> {
     let query = supabase
       .from('posts')
       .select(POST_SELECT)
       .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
       .limit(limit)
+    if (authorId) query = query.eq('author_id', authorId) // feed pessoal do membro
     if (cursor) query = query.lt('created_at', cursor)
     const { data, error } = await query
     if (error) throw error
@@ -29,6 +35,19 @@ export class SupabaseFeedRepository implements FeedRepository {
       items,
       nextCursor: items.length === limit ? items[items.length - 1].createdAt : undefined,
     }
+  }
+
+  async getMemberReviews(coupleId: string, authorId: string, limit = 12): Promise<Post[]> {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(POST_SELECT)
+      .eq('couple_id', coupleId)
+      .eq('author_id', authorId)
+      .eq('type', 'review')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    if (error) throw error
+    return data.map(mapPost)
   }
 
   async createPost(input: { coupleId: string; body: string; photoPath?: string }): Promise<Post> {
@@ -195,6 +214,7 @@ export class SupabaseFeedRepository implements FeedRepository {
     const tables: { table: string; filter?: string }[] = [
       { table: 'posts', filter: `couple_id=eq.${coupleId}` },
       { table: 'lists', filter: `couple_id=eq.${coupleId}` },
+      { table: 'favorites', filter: `couple_id=eq.${coupleId}` },
       { table: 'moments', filter: `couple_id=eq.${coupleId}` },
       { table: 'comments' },
       { table: 'reactions' },

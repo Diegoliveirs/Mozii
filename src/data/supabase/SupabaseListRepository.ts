@@ -92,8 +92,30 @@ export class SupabaseListRepository implements ListRepository {
   }
 
   async setWatched(itemId: string, watched: boolean): Promise<void> {
+    const uid = await currentUserId()
     const { error } = await supabase.from('list_items').update({ watched }).eq('id', itemId)
     if (error) throw error
+    if (!watched) return
+
+    // registra a atividade "assistiu X" no feed (mesmo padrão de addItem: queries
+    // separadas em vez de embed). Só ao marcar como visto — desmarcar não gera evento.
+    const { data: item } = await supabase
+      .from('list_items')
+      .select('list_id, tmdb_id')
+      .eq('id', itemId)
+      .single()
+    if (!item) return
+    const { data: list } = await supabase.from('lists').select('couple_id').eq('id', item.list_id).single()
+    const { data: movie } = await supabase.from('movies').select('title').eq('tmdb_id', item.tmdb_id).single()
+    if (list && movie) {
+      await supabase.from('posts').insert({
+        couple_id: list.couple_id,
+        author_id: uid,
+        type: 'activity',
+        tmdb_id: item.tmdb_id,
+        activity_meta: { kind: 'watched', movie_title: movie.title },
+      })
+    }
   }
 
   async getListsContaining(

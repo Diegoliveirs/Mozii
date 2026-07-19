@@ -52,7 +52,7 @@ test('fluxo completo do casal', async ({ browser }) => {
   console.log('[B] pareado, feed carregado')
 
   // B: perfil mostra os dois
-  await pageB.goto('/perfil')
+  await pageB.goto('/ajustes')
   await expect(pageB.getByText(userA.name).first()).toBeVisible({ timeout: 10_000 })
   await expect(pageB.getByText(userB.name).first()).toBeVisible()
 
@@ -134,7 +134,7 @@ test('fluxo completo do casal', async ({ browser }) => {
   console.log('[A] badge de lista na página do filme')
 
   // A: perfil — nome, avatar, estatísticas
-  await pageA.goto('/perfil')
+  await pageA.goto('/ajustes')
   await expect(pageA.getByText('Nossos números')).toBeVisible({ timeout: 10_000 })
   await pageA.getByRole('button', { name: userA.name }).click()
   await pageA.locator('form input').fill('Ana Editada')
@@ -153,7 +153,7 @@ test('fluxo completo do casal', async ({ browser }) => {
   // ---- v5: sair do casal + excluir conta ----
 
   // B sai do espaço
-  await pageB.goto('/perfil')
+  await pageB.goto('/ajustes')
   await pageB.getByRole('button', { name: 'Sair do espaço' }).click()
   await pageB.locator('.fixed').getByRole('button', { name: 'Sair', exact: true }).click()
   await pageB.waitForURL('**/parear', { timeout: 10_000 })
@@ -171,7 +171,7 @@ test('fluxo completo do casal', async ({ browser }) => {
   console.log('[B] re-pareado com o mesmo código')
 
   // B pede exclusão de conta e volta ao login
-  await pageB.goto('/perfil')
+  await pageB.goto('/ajustes')
   await pageB.getByRole('button', { name: 'Excluir conta' }).click()
   await pageB.locator('.fixed').getByRole('button', { name: 'Excluir conta' }).click()
   await pageB.waitForURL('**/entrar', { timeout: 10_000 })
@@ -182,7 +182,7 @@ test('fluxo completo do casal', async ({ browser }) => {
   await pageB.getByPlaceholder('Senha').fill(userB.password)
   await pageB.getByRole('button', { name: 'Entrar', exact: true }).click()
   await pageB.waitForURL(/\/$/, { timeout: 15_000 })
-  await pageB.goto('/perfil')
+  await pageB.goto('/ajustes')
   await expect(pageB.getByText('Nossos números')).toBeVisible({ timeout: 10_000 })
   console.log('[B] relogin cancelou exclusão, perfil normal')
 

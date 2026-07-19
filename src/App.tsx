@@ -7,7 +7,8 @@ import { AppShell } from './components/layout/AppShell'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 import { PairingPage } from './pages/PairingPage'
-import { SettingsPage } from './pages/SettingsPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { AjustesPage } from './pages/AjustesPage'
 import { FeedPage } from './pages/FeedPage'
 import { NewPostPage } from './pages/NewPostPage'
 import { PostDetailPage } from './pages/PostDetailPage'
@@ -66,7 +67,9 @@ export default function App() {
             {/* rotas antigas viram atalho para o hub Cinema (bookmarks/PWA) */}
             <Route path="/buscar" element={<Navigate to="/cinema" replace />} />
             <Route path="/listas" element={<Navigate to="/cinema?aba=listas" replace />} />
-            <Route path="/perfil" element={<SettingsPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/perfil/:memberId" element={<ProfilePage />} />
+            <Route path="/ajustes" element={<AjustesPage />} />
             <Route path="/premium" element={<UpgradePage />} />
           </Route>
         </Route>

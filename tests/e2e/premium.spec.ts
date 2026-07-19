@@ -76,8 +76,8 @@ test('assinar, confirmar sem F5 e cancelar — tudo dentro do app', async ({ pag
   await expect(page.getByText('Confirmando pagamento…')).toBeVisible({ timeout: 60_000 })
   await expect(page.getByText(/Premium ativo|Aproveitem/)).toBeVisible({ timeout: 90_000 })
 
-  // perfil mostra plano + valor + próxima cobrança
-  await page.goto('/perfil')
+  // ajustes mostram plano + valor + próxima cobrança
+  await page.goto('/ajustes')
   await expect(page.getByText('Premium ativo')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText(/Plano mensal/)).toBeVisible()
   await expect(page.getByText(/Próxima cobrança em/)).toBeVisible()

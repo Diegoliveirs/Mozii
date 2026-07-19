@@ -49,6 +49,21 @@ export function FeedItemCard({ post, members, reactions, onShare, commentCount }
     const authorIndex = members.findIndex((m) => m.id === post.authorId)
     const author = members[authorIndex]
     const meta = post.activityMeta
+    if (meta?.kind === 'watched') {
+      return (
+        <div className="flex items-center gap-2 px-1 py-1.5 text-xs text-ash">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ed93b1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12l5 5L20 7" />
+          </svg>
+          <span>
+            {author?.displayName} {t.feed.watched}{' '}
+            <Link to={`/filme/${post.movie?.tmdbId}`} className="text-snow">
+              {meta.movieTitle}
+            </Link>
+          </span>
+        </div>
+      )
+    }
     return (
       <div className="flex items-center gap-2 px-1 py-1.5 text-xs text-ash">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5dcaa5" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
