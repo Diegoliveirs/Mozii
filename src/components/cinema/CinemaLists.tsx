@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useCreateList, useLists } from '../hooks/useLists'
-import { useEntitlement } from '../hooks/useEntitlements'
-import { Paywall } from '../components/premium/Paywall'
-import { posterUrl } from '../api/tmdb'
-import { t } from '../lib/i18n'
+import { useCreateList, useLists } from '../../hooks/useLists'
+import { useEntitlement } from '../../hooks/useEntitlements'
+import { Paywall } from '../premium/Paywall'
+import { posterUrl } from '../../api/tmdb'
+import { t } from '../../lib/i18n'
 
 const FREE_LIST_LIMIT = 3
 
-export function ListsPage() {
+export function CinemaLists() {
   const { data: lists, isLoading } = useLists()
   const { data: ent } = useEntitlement()
   const createList = useCreateList()
@@ -37,9 +37,9 @@ export function ListsPage() {
   }
 
   return (
-    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))]">
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-lg font-medium text-snow">Nossas listas</h1>
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-medium text-mist">Nossas listas</h2>
         <button
           onClick={handleNewList}
           aria-label={t.movies.newList}

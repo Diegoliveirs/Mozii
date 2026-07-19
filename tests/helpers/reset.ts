@@ -52,6 +52,7 @@ export async function resetTestUser(email: string, password: string, displayName
   if (coupleId) {
     await api(`/rest/v1/posts?author_id=eq.${user.id}`, token, { method: 'DELETE' })
     await api(`/rest/v1/lists?couple_id=eq.${coupleId}`, token, { method: 'DELETE' })
+    await api(`/rest/v1/moments?couple_id=eq.${coupleId}`, token, { method: 'DELETE' })
 
     const listRes = await api('/storage/v1/object/list/post-photos', token, {
       method: 'POST',
