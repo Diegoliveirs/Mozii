@@ -3,6 +3,7 @@ import type {
   Comment,
   Couple,
   ListItem,
+  Moment,
   MovieList,
   MovieRef,
   Post,
@@ -115,6 +116,18 @@ export function mapPost(row: PostRow): Post {
         } satisfies ActivityMeta)
       : null,
     createdAt: row.created_at,
+  }
+}
+
+export function mapMoment(row: Record<string, unknown>): Moment {
+  return {
+    id: row.id as string,
+    coupleId: row.couple_id as string,
+    authorId: row.author_id as string,
+    caption: (row.caption as string | null) ?? null,
+    happenedOn: row.happened_on as string,
+    photoPaths: (row.photo_paths as string[] | null) ?? [],
+    createdAt: row.created_at as string,
   }
 }
 
