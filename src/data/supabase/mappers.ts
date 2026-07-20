@@ -88,7 +88,7 @@ interface PostRow {
   id: string
   couple_id: string
   author_id: string
-  type: 'post' | 'review' | 'activity'
+  type: 'post' | 'review' | 'activity' | 'moment'
   body: string | null
   photo_path: string | null
   rating: number | string | null
@@ -110,10 +110,12 @@ export function mapPost(row: PostRow): Post {
     rating: row.rating === null ? null : Number(row.rating),
     activityMeta: meta
       ? ({
-          kind: meta.kind as 'list_add' | 'watched',
+          kind: meta.kind as 'list_add' | 'watched' | 'moment',
           listId: (meta.list_id as string | undefined) ?? undefined,
           listName: (meta.list_name as string | undefined) ?? undefined,
-          movieTitle: meta.movie_title as string,
+          movieTitle: (meta.movie_title as string | undefined) ?? undefined,
+          momentId: (meta.moment_id as string | undefined) ?? undefined,
+          photoPaths: (meta.photo_paths as string[] | undefined) ?? undefined,
         } satisfies ActivityMeta)
       : null,
     createdAt: row.created_at,

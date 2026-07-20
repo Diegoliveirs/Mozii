@@ -36,7 +36,11 @@ export function useCreateMoment() {
       }
       return moments.createMoment({ coupleId, caption, happenedOn, photoPaths })
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['moments'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['moments'] })
+      qc.invalidateQueries({ queryKey: ['feed'] })
+      qc.invalidateQueries({ queryKey: ['member-feed'] })
+    },
   })
 }
 
@@ -45,6 +49,10 @@ export function useDeleteMoment() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (momentId: string) => moments.deleteMoment(momentId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['moments'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['moments'] })
+      qc.invalidateQueries({ queryKey: ['feed'] })
+      qc.invalidateQueries({ queryKey: ['member-feed'] })
+    },
   })
 }

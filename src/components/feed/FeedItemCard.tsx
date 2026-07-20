@@ -9,6 +9,7 @@ import { ReactionBar } from './ReactionBar'
 import { CommentSection } from './CommentSection'
 import { Poster } from '../movies/Poster'
 import { StarRating } from '../movies/StarRating'
+import { Lightbox } from '../ui/Lightbox'
 
 interface Props {
   post: Post
@@ -40,6 +41,41 @@ function PostPhoto({ photoPath }: { photoPath: string }) {
   const { data: url } = usePhotoUrl(photoPath)
   if (!url) return <div className="mb-2 h-44 animate-pulse rounded-xl bg-overlay" />
   return <img src={url} alt="" className="mb-2 max-h-96 w-full rounded-xl object-cover" />
+}
+
+function AlbumPhoto({ path, className, onClick }: { path: string; className: string; onClick: () => void }) {
+  const { data: url } = usePhotoUrl(path)
+  if (!url) return <div className={`animate-pulse rounded-xl bg-overlay ${className}`} />
+  return (
+    <img
+      src={url}
+      alt=""
+      onClick={onClick}
+      className={`w-full cursor-pointer rounded-xl object-cover ${className}`}
+    />
+  )
+}
+
+/** Álbum da memória no feed — 1 foto cheia ou grade 2 col; clique abre o lightbox. */
+function MomentAlbum({ paths }: { paths: string[] }) {
+  const [lightbox, setLightbox] = useState<number | null>(null)
+  if (!paths.length) return null
+  return (
+    <div className="mb-2">
+      {paths.length === 1 ? (
+        <AlbumPhoto path={paths[0]} className="max-h-96" onClick={() => setLightbox(0)} />
+      ) : (
+        <div className="grid grid-cols-2 gap-1.5">
+          {paths.map((p, i) => (
+            <AlbumPhoto key={p} path={p} className="h-36" onClick={() => setLightbox(i)} />
+          ))}
+        </div>
+      )}
+      {lightbox !== null && (
+        <Lightbox paths={paths} index={lightbox} onClose={() => setLightbox(null)} />
+      )}
+    </div>
+  )
 }
 
 export function FeedItemCard({ post, members, reactions, onShare, commentCount }: Props) {
@@ -83,9 +119,14 @@ export function FeedItemCard({ post, members, reactions, onShare, commentCount }
     )
   }
 
+  const authorAction =
+    post.type === 'review' ? t.feed.reviewed : post.type === 'moment' ? t.feed.savedMoment : undefined
+
   return (
     <article className="rounded-2xl bg-card p-3.5">
-      <AuthorHeader post={post} members={members} action={post.type === 'review' ? t.feed.reviewed : undefined} />
+      <AuthorHeader post={post} members={members} action={authorAction} />
+
+      {post.type === 'moment' && <MomentAlbum paths={post.activityMeta?.photoPaths ?? []} />}
 
       {post.type === 'review' && post.movie && (
         <Link to={`/filme/${post.movie.tmdbId}`} className="mb-2 flex gap-3">

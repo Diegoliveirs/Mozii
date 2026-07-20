@@ -1,35 +1,73 @@
 import { Fragment, useMemo, useRef, useState } from 'react'
 import { parseISO } from 'date-fns'
 import type { Moment, Profile } from '../domain/types'
-import { useCreateMoment, useMoments } from '../hooks/useMoments'
-import { useCouple } from '../hooks/useCouple'
+import { useCreateMoment, useDeleteMoment, useMoments } from '../hooks/useMoments'
+import { useCouple, useMyProfile } from '../hooks/useCouple'
 import { useEntitlement } from '../hooks/useEntitlements'
 import { usePhotoUrl } from '../hooks/useFeed'
 import { ProfileAvatar } from '../components/feed/ProfileAvatar'
 import { Paywall } from '../components/premium/Paywall'
+import { Lightbox } from '../components/ui/Lightbox'
+import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { coupleAnniversary, formatDayLabel, todayInputValue } from '../lib/dates'
 import { t } from '../lib/i18n'
 
 const FREE_MOMENTS_PER_MONTH = 5
+const FREE_ALBUM_PHOTOS = 5
+const PREMIUM_ALBUM_PHOTOS = 20
 
-function MomentPhoto({ path, className }: { path: string; className: string }) {
+function MomentPhoto({
+  path,
+  className,
+  onClick,
+}: {
+  path: string
+  className: string
+  onClick?: () => void
+}) {
   const { data: url } = usePhotoUrl(path)
   if (!url) return <div className={`animate-pulse rounded-xl bg-overlay ${className}`} />
-  return <img src={url} alt="" className={`w-full rounded-xl object-cover ${className}`} />
+  return (
+    <img
+      src={url}
+      alt=""
+      onClick={onClick}
+      className={`w-full rounded-xl object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
+    />
+  )
 }
 
 function MomentCard({ moment, members }: { moment: Moment; members: Profile[] }) {
+  const { data: myProfile } = useMyProfile()
+  const deleteMoment = useDeleteMoment()
+  const [lightbox, setLightbox] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const idx = members.findIndex((m) => m.id === moment.authorId)
   const author = members[idx]
   const photos = moment.photoPaths
+  const isMine = moment.authorId === myProfile?.id
 
   return (
-    <div className="rounded-2xl bg-card p-3">
-      {photos.length === 1 && <MomentPhoto path={photos[0]} className="max-h-96" />}
+    <div className="relative rounded-2xl bg-card p-3">
+      {isMine && (
+        <button
+          onClick={() => setConfirmDelete(true)}
+          aria-label={t.moments.deleteMoment}
+          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-rose-soft backdrop-blur transition-transform active:scale-90"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
+          </svg>
+        </button>
+      )}
+      {photos.length === 1 && (
+        <MomentPhoto path={photos[0]} className="max-h-96" onClick={() => setLightbox(0)} />
+      )}
       {photos.length > 1 && (
         <div className="grid grid-cols-2 gap-1.5">
-          {photos.map((p) => (
-            <MomentPhoto key={p} path={p} className="h-36" />
+          {photos.map((p, i) => (
+            <MomentPhoto key={p} path={p} className="h-36" onClick={() => setLightbox(i)} />
           ))}
         </div>
       )}
@@ -37,6 +75,20 @@ function MomentCard({ moment, members }: { moment: Moment; members: Profile[] })
         <ProfileAvatar profile={author} index={Math.max(idx, 0)} size="sm" />
         {moment.caption && <p className="text-sm leading-snug text-mist">{moment.caption}</p>}
       </div>
+
+      {lightbox !== null && photos.length > 0 && (
+        <Lightbox paths={photos} index={lightbox} onClose={() => setLightbox(null)} />
+      )}
+      {confirmDelete && (
+        <ConfirmDialog
+          message={t.moments.deleteConfirm}
+          onConfirm={async () => {
+            await deleteMoment.mutateAsync(moment.id)
+            setConfirmDelete(false)
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   )
 }
@@ -55,15 +107,16 @@ export function MomentsPage() {
   const { data: coupleData } = useCouple()
   const { data: ent } = useEntitlement()
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [paywall, setPaywall] = useState(false)
+  const [paywall, setPaywall] = useState<'moments' | 'album' | null>(null)
 
   const members = useMemo(() => coupleData?.members ?? [], [coupleData])
+  const isPremium = !!ent?.isPremium
 
   const monthStart = new Date()
   monthStart.setDate(1)
   monthStart.setHours(0, 0, 0, 0)
   const monthCount = (moments ?? []).filter((m) => new Date(m.createdAt) >= monthStart).length
-  const atFreeLimit = !ent?.isPremium && monthCount >= FREE_MOMENTS_PER_MONTH
+  const atFreeLimit = !isPremium && monthCount >= FREE_MOMENTS_PER_MONTH
 
   const entries = useMemo<Entry[]>(() => {
     const list: Entry[] = (moments ?? []).map((m) => ({
@@ -104,7 +157,7 @@ export function MomentsPage() {
   }, [moments, members, coupleData])
 
   function handleNew() {
-    if (atFreeLimit) setPaywall(true)
+    if (atFreeLimit) setPaywall('moments')
     else setSheetOpen(true)
   }
 
@@ -138,20 +191,35 @@ export function MomentsPage() {
       </div>
 
       {sheetOpen && (
-        <NewMomentSheet onClose={() => setSheetOpen(false)} onLimit={() => setPaywall(true)} />
+        <NewMomentSheet
+          isPremium={isPremium}
+          onClose={() => setSheetOpen(false)}
+          onLimit={() => setPaywall('moments')}
+          onAlbumLimit={() => setPaywall('album')}
+        />
       )}
       {paywall && (
         <Paywall
-          title={t.premium.paywall.momentsTitle}
-          body={t.premium.paywall.momentsBody}
-          onClose={() => setPaywall(false)}
+          title={paywall === 'album' ? t.premium.paywall.albumTitle : t.premium.paywall.momentsTitle}
+          body={paywall === 'album' ? t.premium.paywall.albumBody : t.premium.paywall.momentsBody}
+          onClose={() => setPaywall(null)}
         />
       )}
     </div>
   )
 }
 
-function NewMomentSheet({ onClose, onLimit }: { onClose: () => void; onLimit: () => void }) {
+function NewMomentSheet({
+  isPremium,
+  onClose,
+  onLimit,
+  onAlbumLimit,
+}: {
+  isPremium: boolean
+  onClose: () => void
+  onLimit: () => void
+  onAlbumLimit: () => void
+}) {
   const create = useCreateMoment()
   const [caption, setCaption] = useState('')
   const [photos, setPhotos] = useState<File[]>([])
@@ -160,12 +228,24 @@ function NewMomentSheet({ onClose, onLimit }: { onClose: () => void; onLimit: ()
   const [error, setError] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
+  const maxPhotos = isPremium ? PREMIUM_ALBUM_PHOTOS : FREE_ALBUM_PHOTOS
+
   function addPhotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
-    if (!files.length) return
-    setPhotos((p) => [...p, ...files])
-    setPreviews((p) => [...p, ...files.map((f) => URL.createObjectURL(f))])
     if (fileInput.current) fileInput.current.value = ''
+    if (!files.length) return
+    // limite de fotos por memória: free 5, premium 20 (fonte da verdade = RLS)
+    const room = Math.max(maxPhotos - photos.length, 0)
+    const accepted = files.slice(0, room)
+    if (accepted.length) {
+      setPhotos((p) => [...p, ...accepted])
+      setPreviews((p) => [...p, ...accepted.map((f) => URL.createObjectURL(f))])
+    }
+    if (files.length > accepted.length) {
+      // excedeu o teto do plano: free → paywall p/ assinar; premium → aviso inline
+      if (isPremium) setError(t.moments.maxPhotos(maxPhotos))
+      else onAlbumLimit()
+    }
   }
 
   function removePhoto(i: number) {
@@ -232,6 +312,10 @@ function NewMomentSheet({ onClose, onLimit }: { onClose: () => void; onLimit: ()
             className="hidden"
           />
         </div>
+
+        <p className="mt-1.5 text-right text-[11px] text-ash">
+          {photos.length}/{maxPhotos}
+        </p>
 
         <textarea
           value={caption}

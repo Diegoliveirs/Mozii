@@ -5,10 +5,10 @@ const BUCKET = 'post-photos'
 
 export class SupabaseStorageRepository implements StorageRepository {
   async uploadPhoto(coupleId: string, file: Blob): Promise<string> {
-    const path = `${coupleId}/${crypto.randomUUID()}.jpg`
+    const path = `${coupleId}/${crypto.randomUUID()}.webp`
     const { error } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { contentType: 'image/jpeg' })
+      .upload(path, file, { contentType: 'image/webp' })
     if (error) throw error
     return path
   }

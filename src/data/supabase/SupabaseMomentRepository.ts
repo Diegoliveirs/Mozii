@@ -41,10 +41,44 @@ export class SupabaseMomentRepository implements MomentRepository {
       .select('*')
       .single()
     if (error) throw error
-    return mapMoment(data)
+    const moment = mapMoment(data)
+
+    // post-companheiro no feed: a memória vira um post 'moment' (reusa reações/comentários).
+    // Se falhar, desfaz a memória para não deixar órfã sem presença no feed.
+    const { error: postError } = await supabase.from('posts').insert({
+      couple_id: input.coupleId,
+      author_id: uid,
+      type: 'moment',
+      body: input.caption,
+      activity_meta: { moment_id: moment.id, photo_paths: input.photoPaths },
+      created_at: moment.createdAt,
+    })
+    if (postError) {
+      await supabase.from('moments').delete().eq('id', moment.id)
+      throw postError
+    }
+    return moment
   }
 
   async deleteMoment(momentId: string): Promise<void> {
+    // limpeza best-effort das fotos no Storage — não bloqueia a exclusão da linha
+    try {
+      const { data: row } = await supabase
+        .from('moments')
+        .select('photo_paths')
+        .eq('id', momentId)
+        .single()
+      const paths: string[] = row?.photo_paths ?? []
+      if (paths.length) await supabase.storage.from('post-photos').remove(paths)
+    } catch {
+      // órfãos no Storage não quebram nada; a exclusão da memória segue
+    }
+    // remove o post-companheiro (cascata leva reações e comentários dele)
+    await supabase
+      .from('posts')
+      .delete()
+      .eq('type', 'moment')
+      .eq('activity_meta->>moment_id', momentId)
     const { error } = await supabase.from('moments').delete().eq('id', momentId)
     if (error) throw error
   }
