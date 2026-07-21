@@ -74,3 +74,19 @@ body {
 .sheet-in {
   animation: sheetIn 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* leve overshoot no fim = "pop" do filme sorteado */
+.pop-in {
+  animation: popIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
